@@ -1,32 +1,21 @@
-int myFS_create(int size){       // size in megabytes
-    // Test
-    char * bytes = "123456789azertyuiop";
+int myFS_create(int size){       // size in MB
+    FileSystem fs;
+    fs.sb.max_size = size*1024*1024;
+    fs.sb.inode_number =  0;
+    fs.sb.current_size = sizeof(SuperBlock);
 
-    Inode inode;
-    inode.file = false;
-    inode.nth = 1;
-    inode.size = strlen(bytes);
-    strcpy(inode.name, "testfile");
-    strcpy(inode.parent_directory, "/");
+    FILE * file;
+    file = fopen(PATH, "wb");
+    // ftruncate(fileno(file), size*1024*1024); Disabled only during testing
+    fwrite(&fs.sb, sizeof(SuperBlock), 1, file);
+    fclose(file);
 
-    Superblock sb;
-    sb.max_size = size*1024*1024;
-    sb.inode_number =  0;
-    sb.current_size = sizeof(sb) + sizeof(inode) + inode.size;
-
-    FILE * fs_file;
-    fs_file = fopen(PATH, "wb");
-    fwrite(&sb, sizeof(sb), 1, fs_file);
-    fwrite(&inode, sizeof(inode), 1, fs_file);
-    fwrite(bytes, inode.size, 1, fs_file);
-    fclose(fs_file);
-
-    printf("Filesystem size: %ld\n", sb.current_size);
-    printf("Byte size: %ld\n", inode.size);
-    printf("Name: %s\n", inode.name);
-    printf("Bytes: %s\n", bytes);
-
-    printf("Successfully created a vhm file system to %s with a maximum size of %d MB\n", PATH, size);
+    printf("FileSystem created\n");
+    printf("-----------------------------------------------\n");
+    printf("FileSystem size: %ld bytes\n", fs.sb.current_size);
+    printf("FileSystem max size: %ld bytes\n", fs.sb.max_size);
+    printf("Inodes: %ld\n", fs.sb.inode_number);
+    printf("-----------------------------------------------\n");
 
     return 0;
 }

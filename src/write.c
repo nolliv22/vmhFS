@@ -1,21 +1,35 @@
 int myFS_write(char * input_path, char * destination_path){
+    FileSystem fs = get_FS(PATH);
 
-    // FILE * fs_file;
-    // fs_file = fopen(PATH, "r");
-    // fread(&fs, sizeof(fs), 1, fs_file);
-    // fclose(fs_file);
+    FILE * input_file;
+    input_file = fopen(input_path, "rb");
 
-    // superinode s_inode;
-    // s_inode.file = true;
-    // s_inode.name = "azerty123456";
-    // s_inode.parent_directory = "/";
+    fseek(input_file, 0, SEEK_END);
+    unsigned long int input_file_size = ftell(input_file);
+    fseek(input_file, 0, SEEK_SET);
 
-    // fs.s_inodes[1] = s_inode;
+    Inode inode;
+    inode.file = true;
+    inode.nth = fs.sb.inode_number + 1;
+    inode.size = input_file_size;
+    strcpy(inode.name, destination_path);         // Need to split the path
+    strcpy(inode.parent_directory, "/");    // Need to get the parent directory
+                                            // Need to create recursively parent direcory to the root
 
-    // FILE * fs_file2;
-    // fs_file2 = fopen(PATH, "w");
-    // fwrite(&fs, sizeof(fs), 1, fs_file2);
-    // fclose(fs_file);
+    char * bytes = malloc(inode.size);
+    fread(bytes, input_file_size, 1, input_file);
 
+    fs.sb.inode_number += 1;
+    fs.sb.current_size += sizeof(Inode) + inode.size;
+
+    fs.inode_array = (Inode*)realloc(fs.inode_array, sizeof(Inode)*fs.sb.inode_number);
+    fs.bytes_array = (char **)realloc(fs.bytes_array, sizeof(char*)*fs.sb.inode_number);
+
+    fs.inode_array[fs.sb.inode_number-1] = inode;
+    fs.bytes_array[fs.sb.inode_number-1] = bytes;
+
+    put_FS(PATH, fs);
+
+    free_FS(fs);
     return 0;
 }

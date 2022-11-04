@@ -6,6 +6,7 @@
 #include "create.c"
 #include "write.c"
 #include "read.c"
+#include "ls.c"
 
 // Export global variable
 extern char * PATH;
@@ -62,6 +63,16 @@ int main(int argc, char * argv[]){
                 char * input_path = argv[3];
                 char * destination_path = argv[4];
                 myFS_read(input_path, destination_path);
+            } else {
+                printf("Usage: vhmFS FILE write INPUT_PATH DESTINATION_PATH\n");
+                // TODO: Help for the command "create"
+                exit(0);
+            }
+        }
+
+        else if (strcmp("ls", command) == 0){
+            if (argc == 3){
+                myFS_ls();
             } else {
                 printf("Usage: vhmFS FILE write INPUT_PATH DESTINATION_PATH\n");
                 // TODO: Help for the command "create"
