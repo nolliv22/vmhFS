@@ -1,5 +1,11 @@
+// Custom libraries
+#include "filesystem.c"     // Custom structures for Filesystem
+#include "main.h"           // Standard libraries and global variable PATH
+
 // Include all the commands
 #include "create.c"
+#include "write.c"
+#include "read.c"
 
 // Export global variable
 extern char * PATH;
@@ -31,14 +37,39 @@ int main(int argc, char * argv[]){
         if (strcmp("create", command) == 0){
             if (argc == 4){
                 int size = atoi(argv[3]);
-                create(size);
+                myFS_create(size);
             } else {
                 printf("Usage: vhmFS FILE create SIZE\n");
                 // TODO: Help for the command "create"
                 exit(0);
             }
+        } 
+        
+        else if (strcmp("write", command) == 0){
+            if (argc == 5){
+                char * input_path = argv[3];
+                char * destination_path = argv[4];
+                myFS_write(input_path, destination_path);
+            } else {
+                printf("Usage: vhmFS FILE write INPUT_PATH DESTINATION_PATH\n");
+                // TODO: Help for the command "create"
+                exit(0);
+            }
+        }
 
-        } else {
+        else if (strcmp("read", command) == 0){
+            if (argc == 5){
+                char * input_path = argv[3];
+                char * destination_path = argv[4];
+                myFS_read(input_path, destination_path);
+            } else {
+                printf("Usage: vhmFS FILE write INPUT_PATH DESTINATION_PATH\n");
+                // TODO: Help for the command "create"
+                exit(0);
+            }
+        }
+
+        else {
             print_help();
             exit(0);
         }
