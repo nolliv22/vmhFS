@@ -144,20 +144,29 @@ FileSystem rm_inode(FileSystem fs, int i){
 int find_file(char * path);
 
 // Store a new Directory in the directory_array 
-Directory * add_directory(FileSystem fs,Directory * directory_array, char * name, unsigned long int parent_id){
-fs.sb.directory_number += 1;
-directory_array = (Directory*)realloc(directory_array, sizeof(Directory)*fs.sb.directory_number);
-Directory dir;
-strcpy(dir.name,name);
-dir.parent_id = parent_id;
-directory_array[fs.sb.directory_number - 1] = dir;
-return directory_array;
+Directory * add_directory(FileSystem fs, char * name, unsigned long int parent_id){
+    int i;
+    for(i = 0 ; i<fs.sb.directory_number  ; i++){
+        if(fs.directory_array[i].parent_id == -1){
+            Directory dir;
+            dir.parent_id = parent_id;
+            fs.directory_array[i] = dir;
+            return fs.directory_array;
+        }
+    fs.directory_array = (Directory*)realloc(fs.directory_array, sizeof(Directory)*fs.sb.directory_number);
+    fs.sb.directory_number += 1;
+    Directory dir;
+    strcpy(dir.name,name);
+    dir.parent_id = parent_id;
+    fs.directory_array[fs.sb.directory_number - 1] = dir;
+    fs.sb.current_size = fs.sb.current_size + sizeof(Directory);
+    return fs.directory_array;
 }
 
 // Remove a directory knowing its index
 Directory * rm_directory(Directory * directory_array, unsigned long int id);
 
-// Find a directory knowing its name and parent_in inside directory_array
+// Find a directory knowing its name and parent_id inside directory_array
 // Return -1 if the directory doesn't exist
 unsigned long int find_directory(Directory * directory_array, char * name, unsigned long int parent_id);
 
