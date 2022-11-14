@@ -8,11 +8,9 @@ int myFS_ls(){
 
     if (fs.sb.inode_number > 0){
         for (int i=0; i<fs.sb.inode_number; i++){
-            printf("Id: %ld\n", fs.inode_array[i].id);
-            printf("File: %d\n", fs.inode_array[i].file);
             printf("Size: %ld B\n", fs.inode_array[i].size);
             printf("Name: %s\n", fs.inode_array[i].name);
-            printf("Parent: %s\n", fs.inode_array[i].parent_directory);
+            printf("Parent: %ld\n", fs.inode_array[i].parent_id);
             printf("-----------------------------------------------\n");
         }
     } else {

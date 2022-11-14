@@ -4,6 +4,8 @@ int myFS_create(int size){       // size in MB
     fs.sb.inode_number =  0;
     fs.sb.current_size = sizeof(SuperBlock);
 
+    // Add root directory
+
     FILE * file;
     file = fopen(PATH, "wb");
     // ftruncate(fileno(file), size*1024*1024); Disabled only during testing

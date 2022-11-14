@@ -41,11 +41,9 @@ int myFS_write(char * input_path, char * destination_path){
     int i = fs.sb.inode_number-1;
     printf("Write file %s to filesystem %s:\n", input_path, PATH);
     printf("-----------------------------------------------\n");
-    printf("Id: %ld\n", fs.inode_array[i].id);
-    printf("File: %d\n", fs.inode_array[i].file);
     printf("Size: %ld B\n", fs.inode_array[i].size);
     printf("Name: %s\n", fs.inode_array[i].name);
-    printf("Parent: %s\n", fs.inode_array[i].parent_directory);
+    printf("Parent: %ld\n", fs.inode_array[i].parent_id);
     printf("-----------------------------------------------\n");
 
     free(file.bytes);
