@@ -143,8 +143,16 @@ FileSystem rm_inode(FileSystem fs, int i){
 // Find the file stored in this path and return its index 
 int find_file(char * path);
 
-// Store a new Directory in the directory_array
-Directory * add_directory(Directory * directory_array, char * name, unsigned long int parent_id);
+// Store a new Directory in the directory_array 
+Directory * add_directory(FileSystem fs,Directory * directory_array, char * name, unsigned long int parent_id){
+fs.sb.directory_number += 1;
+directory_array = (Directory*)realloc(directory_array, sizeof(Directory)*fs.sb.directory_number);
+Directory dir;
+strcpy(dir.name,name);
+dir.parent_id = parent_id;
+directory_array[fs.sb.directory_number - 1] = dir;
+return directory_array;
+}
 
 // Remove a directory knowing its index
 Directory * rm_directory(Directory * directory_array, unsigned long int id);
