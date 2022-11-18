@@ -140,23 +140,7 @@ FileSystem rm_inode(FileSystem fs, int i){
     return fs;
 }
 
-// Find the file stored in this path and return its index 
-int find_file(char * path);
-
-// Store a new Directory in the directory_array
-Directory * add_directory(Directory * directory_array, char * name, unsigned long int parent_id);
-
-// Remove a directory knowing its index
-Directory * rm_directory(Directory * directory_array, unsigned long int id);
-
-// Find a directory knowing its name and parent_in inside directory_array
-// Return -1 if the directory doesn't exist
-unsigned long int find_directory(Directory * directory_array, char * name, unsigned long int parent_id);
-
-
-
 char ** split_path(char * path) {
-    
     char PATH[strlen(path)];
     strcpy(PATH, path); 
 
@@ -167,17 +151,95 @@ char ** split_path(char * path) {
         }
     }
 
-    printf("%d\n", count);
-
     int i = 0;
     char *p = strtok (PATH, "/");
-    char ** array = malloc(sizeof(char *)*count);
+    char **path_array = malloc(sizeof(char*)*3);
 
     while (p != NULL) {
-        array[i++] = p;
+        path_array[i] = malloc(sizeof(char*));
+        printf("%s\n", p);
+        path_array[i] = p;
+        i++;
         p = strtok (NULL, "/");
     }
 
-    return array;
-    
+    return path_array;   
+}
+
+// Find a directory knowing its name and parent_in inside directory_array
+// Return -1 if the directory doesn't exist
+unsigned long int find_directory(FileSystem fs, char *name, unsigned long int parent_id){
+    for (int i=0; i<fs.sb.directory_number; i++){
+        Directory dir;
+        dir = fs.directory_array[i];
+
+        if (strncmp(dir.name, name, strlen(name)) == 0 && dir.parent_id == parent_id){
+            return i;
+        }
+    }
+
+    return -1;
+};
+
+// Find the file stored in this path and return its index 
+int find_file(FileSystem fs, char * path){
+    char ** path_array = split_path(path);
+
+    char * file_name = path_array[0];
+    unsigned long int current_parent_id = 0;
+
+    printf("%s\n", file_name);
+
+    for (int k=0; k<sizeof(path_array)-1; k++){
+        unsigned long int dir_id = find_directory(fs, fs.directory_array[k].name, current_parent_id);
+
+        if (dir_id == -1){
+            // Dir not found
+            return -1;
+        } else {
+            current_parent_id = dir_id;
+        }
+    }
+
+    for (int l=0; l<fs.sb.inode_number; l++){
+        if (strncmp(fs.inode_array[l].name, file_name, strlen(file_name)) && fs.inode_array[l].parent_id == current_parent_id){
+            return l;
+        }
+    }
+
+    return -1;
+}
+
+// Store a new Directory in the directory_array
+FileSystem add_directory(FileSystem fs, char * name, unsigned long int parent_id){
+
+    for(int i=0; i<fs.sb.directory_number; i++){
+        if(fs.directory_array[i].parent_id == -1){
+            Directory dir;
+            dir.parent_id = parent_id;
+            fs.directory_array[i] = dir;
+            return fs;
+        }
+    }
+
+    fs.sb.directory_number += 1;
+    fs.directory_array = (Directory*)realloc(fs.directory_array, sizeof(Directory)*fs.sb.directory_number);
+
+    Directory dir;
+    strcpy(dir.name,name);
+    dir.parent_id = parent_id;
+
+    fs.directory_array[fs.sb.directory_number-1] = dir;
+    fs.sb.current_size = fs.sb.current_size + sizeof(Directory);
+
+    return fs;
+}
+
+
+// Remove a directory knowing its index
+FileSystem rm_directory(FileSystem fs, unsigned long int id){
+    fs.directory_array[id].parent_id=-1;
+    fs.sb.directory_number=fs.sb.directory_number-1;
+    fs.sb.current_size=fs.sb.current_size-sizeof(Directory);
+    return fs;
 }

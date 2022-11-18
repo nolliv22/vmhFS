@@ -8,6 +8,8 @@
 #include "read.c"
 #include "ls.c"
 
+#include "test.c"
+
 // Export global variable
 extern char * PATH;
 char * PATH;
@@ -77,6 +79,12 @@ int main(int argc, char * argv[]){
                 printf("Usage: vhmFS FILE write INPUT_PATH DESTINATION_PATH\n");
                 // TODO: Help for the command "create"
                 exit(0);
+            }
+        }
+
+        else if (strcmp("test", command) == 0){
+            if (argc == 3){
+                test();
             }
         }
 
