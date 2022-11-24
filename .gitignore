@@ -1,0 +1,5 @@
+# Prevent pushing non source code to the repository
+build
+
+# VSCode configuration files
+.vscode
