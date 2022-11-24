@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define WORD_SIZE 32
+
 typedef struct {
     unsigned long int size;     // Size of the file associated to this inode 
     char name[64];
@@ -13,6 +15,11 @@ typedef struct {
     Inode inode;
     char * bytes;
 } File;
+
+typedef struct {
+    char **components;
+    int number;
+} Splitted_path;
 
 typedef struct {
     char name[64];
@@ -78,6 +85,7 @@ int put_FS(char * path, FileSystem fs){
 int free_FS(FileSystem fs){
     free(fs.bytes_array);
     free(fs.inode_array);
+    free(fs.directory_array);
 
     return 0;
 }
@@ -140,30 +148,32 @@ FileSystem rm_inode(FileSystem fs, int i){
     return fs;
 }
 
-char ** split_path(char * path) {
-    char PATH[strlen(path)];
-    strcpy(PATH, path); 
+Splitted_path split_path(char * input_path) {
+    Splitted_path splitted;
+    splitted.components = malloc(1*sizeof(char*));
 
-    int count = 0;
-    for (int k=0; k<strlen(PATH); k++){
-        if (PATH[k] == '/'){
-            count++;
-        }
+    if (input_path[0] != '/'){
+        printf("Path must start with /");
+        exit(1);
     }
 
     int i = 0;
-    char *p = strtok (PATH, "/");
-    char **path_array = malloc(sizeof(char*)*3);
+    splitted.number = 0;
 
-    while (p != NULL) {
-        path_array[i] = malloc(sizeof(char*));
-        printf("%s\n", p);
-        path_array[i] = p;
-        i++;
-        p = strtok (NULL, "/");
+    while (input_path[i] != '\0'){
+        if (input_path[i] == '/'){
+            i++;
+            splitted.number++;
+            splitted.components = (char**)realloc(splitted.components, splitted.number*sizeof(char*));
+            splitted.components[splitted.number-1] = malloc(WORD_SIZE*sizeof(char));
+
+        } else {
+            strncat(splitted.components[splitted.number-1], &input_path[i], 1);
+            i++;
+        }
     }
 
-    return path_array;   
+    return splitted;   
 }
 
 // Find a directory knowing its name and parent_in inside directory_array
@@ -183,14 +193,12 @@ unsigned long int find_directory(FileSystem fs, char *name, unsigned long int pa
 
 // Find the file stored in this path and return its index 
 int find_file(FileSystem fs, char * path){
-    char ** path_array = split_path(path);
+    Splitted_path splitted = split_path(path);
 
-    char * file_name = path_array[0];
+    char * file_name = splitted.components[splitted.number-1];
     unsigned long int current_parent_id = 0;
 
-    printf("%s\n", file_name);
-
-    for (int k=0; k<sizeof(path_array)-1; k++){
+    for (int k=0; k<sizeof(splitted.components)-1; k++){
         unsigned long int dir_id = find_directory(fs, fs.directory_array[k].name, current_parent_id);
 
         if (dir_id == -1){
@@ -210,9 +218,10 @@ int find_file(FileSystem fs, char * path){
     return -1;
 }
 
-// Store a new Directory in the directory_array
+// Store a new Directory (supposing it doesn't exist) in the directory_array
 FileSystem add_directory(FileSystem fs, char * name, unsigned long int parent_id){
 
+    // Find empty to overwrite
     for(int i=0; i<fs.sb.directory_number; i++){
         if(fs.directory_array[i].parent_id == -1){
             Directory dir;
@@ -236,7 +245,7 @@ FileSystem add_directory(FileSystem fs, char * name, unsigned long int parent_id
 }
 
 
-// Remove a directory knowing its index
+// Remove a directory (supposing it exists) knowing its index
 FileSystem rm_directory(FileSystem fs, unsigned long int id){
     fs.directory_array[id].parent_id=-1;
     fs.sb.directory_number=fs.sb.directory_number-1;
