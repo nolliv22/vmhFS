@@ -176,6 +176,23 @@ Splitted_path split_path(char * input_path) {
     return splitted;   
 }
 
+// Extract only directory path from file path (e.g. /dir1/dir2/foo -> /dir1/dir2)
+char * extract_dir_path(char * file_path){
+    int i = 0;
+    int last_slash;
+    while (file_path[i] != '\0'){
+        if (file_path[i] == '/'){
+            last_slash = i;
+        }
+        i++;
+    }
+    
+    char * dir_path = malloc(last_slash*sizeof(char));
+    memmove(dir_path, file_path, last_slash);
+
+    return dir_path;
+}
+
 // Find a directory knowing its name and parent_in inside directory_array
 // Return -1 if the directory doesn't exist
 unsigned long int find_directory(FileSystem fs, char *name, unsigned long int parent_id){
@@ -191,16 +208,16 @@ unsigned long int find_directory(FileSystem fs, char *name, unsigned long int pa
     return -1;
 };
 
-// Find the file stored in this path and return its index 
-int find_file(FileSystem fs, char * path){
-    Splitted_path splitted = split_path(path);
+// Find a directory knowing its path only
+// Return -1 if the directory doesn't exist
+long int find_dir_from_path(FileSystem fs, char * dir_path){
+    Splitted_path splitted = split_path(dir_path);
 
-    char * file_name = splitted.components[splitted.number-1];
-    unsigned long int current_parent_id = 0;
+    unsigned long int current_parent_id = 0;    // Root
 
-    for (int k=0; k<sizeof(splitted.components)-1; k++){
-        unsigned long int dir_id = find_directory(fs, fs.directory_array[k].name, current_parent_id);
-
+    for (int k=0; k<splitted.number; k++){
+        unsigned long int dir_id = find_directory(fs, splitted.components[k], current_parent_id);
+    
         if (dir_id == -1){
             // Dir not found
             return -1;
@@ -209,12 +226,30 @@ int find_file(FileSystem fs, char * path){
         }
     }
 
+    return current_parent_id;
+}
+
+// Find a file using its path and return its index
+// Return -1 if the file doesn't exist
+int find_file(FileSystem fs, char * file_path){
+    Splitted_path splitted = split_path(file_path);
+    char * file_name = splitted.components[splitted.number-1];
+
+    // Check if the parent directory exists
+    char * dir_path = extract_dir_path(file_path);
+    long int parent_id = find_dir_from_path(fs, dir_path);
+    if (parent_id == -1){
+        return -1;   // Parent directory doesn't exist
+    }
+
+    // Find a file in inode_array which matches the name and the parent_id
     for (int l=0; l<fs.sb.inode_number; l++){
-        if (strncmp(fs.inode_array[l].name, file_name, strlen(file_name)) && fs.inode_array[l].parent_id == current_parent_id){
+        if (strncmp(fs.inode_array[l].name, file_name, strlen(file_name)) == 0 && fs.inode_array[l].parent_id == parent_id){
             return l;
         }
     }
 
+    // No file matching the name and the parent_id inside the parent directory
     return -1;
 }
 

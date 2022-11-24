@@ -12,14 +12,6 @@ int test(){
     fs = add_directory(fs, "dir1", 0);
     fs = add_directory(fs, "dir2", 1);
 
-    
-    unsigned long int dir_id = find_directory(fs, "dir1", 0);
-    fs = rm_directory(fs, dir_id);
-
-    printf("%ld\n", fs.directory_array[0].parent_id);
-    printf("%ld\n", fs.directory_array[1].parent_id);
-    printf("%ld\n", fs.directory_array[2].parent_id);
-
     fs.sb.inode_number = 2;
 
     Inode foo1;
@@ -34,11 +26,11 @@ int test(){
     fs.inode_array[0] = foo1;
     fs.inode_array[1] = foo2;
 
-    // printf("%d\n", find_file(fs, "/dir1/foo1"));
-    // printf("%d\n", find_file(fs, "/dir2/foo1"));
-    // printf("%d\n", find_file(fs, "/dir1/foo2"));
-    // printf("%d\n", find_file(fs, "/dir2/foo2"));
+    printf("%d\n", find_file(fs, "/dir1/foo1"));
+    printf("%d\n", find_file(fs, "/dir2/foo1"));
+    printf("%d\n", find_file(fs, "/dir1/foo2"));
+    printf("%d\n", find_file(fs, "/dir1/dir2/foo2"));
 
-    free_FS(fs);
+    // free_FS(fs);
     return 0;
 }
