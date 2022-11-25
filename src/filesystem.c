@@ -3,51 +3,67 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define WORD_SIZE 32
+// Global variable
+#define WORD_SIZE 32    // Size for file, directory names
 
-typedef struct {
-    unsigned long int size;     // Size of the file associated to this inode 
-    char name[64];
-    unsigned long int parent_id;
+// FILE SYSTEM STRUCTURES
+typedef struct {                    // INODE: information about a file
+    unsigned long int size;         // Number of bytes of the file associated with this inode
+    char name[WORD_SIZE];           // Name of the file
+    unsigned long int parent_id;    // The id of the file's parent directory 
 } Inode;
 
-typedef struct {
-    Inode inode;
-    char * bytes;
+typedef struct {    // FILE: inode (information) + bytes (data) of the file
+    Inode inode;    // FInode of the file
+    char * bytes;   // Bytes of the file
 } File;
 
-typedef struct {
-    char **components;
-    int number;
+typedef struct {        // SPLITTED_PATH: a splitted path
+    char **components;  // Components of the path (e.g. "/dir1/foo" -> ["dir1", "foo"])
+    int number;         // Number of component (to get the last element which is the filename for a file path)
 } Splitted_path;
 
-typedef struct {
-    char name[64];
-    unsigned long int parent_id;
+typedef struct {                    // DIRECTORY
+    char name[WORD_SIZE];           // Name of the directory
+    unsigned long int parent_id;    // The id of the parent of this directory (CONVENTION: -1 if it's an empty directory)
 } Directory;
 
-typedef struct {
-    unsigned long int inode_number;
-    unsigned long int directory_number;
-    unsigned long int current_size;
-    unsigned long int max_size;
+typedef struct {                            // SUPERBLOCK
+    unsigned long int inode_number;         // Number of file
+    unsigned long int directory_number;     // Number of directory
+    unsigned long int current_size;         // Size of the file system
+    unsigned long int max_size;             // Maximum size of the file system
 } SuperBlock;
 
-typedef struct {
-    SuperBlock sb;
-    Inode * inode_array;
-    char ** bytes_array;
-    Directory * directory_array; 
+typedef struct {                    // FILESYSTEM
+    SuperBlock sb;                  // Superblock of the file system
+    Inode * inode_array;            // Array storing inode of files in the file system
+    char ** bytes_array;            // Array storing bytes of files in the file system
+    Directory * directory_array;    // Array storing directories in the file system
 } FileSystem;
 
+
+// FILE SYSTEM FUNCTIONS
+
 FileSystem get_FS(char * path){
+    // Read a file system stored on the disk to the memory
+    // INPUT: 
+    //      path: the path of the file system on the disk
+    // OUTPUT:
+    //      fs: the file system structure
+
+    // Open the file on the disk
     FILE * file;
     file = fopen(path, "rb");
 
+    // Initialize the empty file system struct
     FileSystem fs;
+    fs.directory_array = malloc(sizeof(Directory)*1);
     fs.inode_array = malloc(sizeof(Inode)*1);
     fs.bytes_array = malloc(sizeof(char *)*1);
-
+    
+    // Filling the file system
+    // Read the superblock from the file
     fread(&fs.sb, sizeof(SuperBlock), 1, file);
     
     if (fs.sb.inode_number > 0){
@@ -82,12 +98,10 @@ int put_FS(char * path, FileSystem fs){
     return 0;
 }
 
-int free_FS(FileSystem fs){
+void free_FS(FileSystem fs){
     free(fs.bytes_array);
     free(fs.inode_array);
     free(fs.directory_array);
-
-    return 0;
 }
 
 File getFile(char * input_path, char * destination_path){
@@ -131,7 +145,9 @@ FileSystem rm_inode(FileSystem fs, int i){
     fs.sb.inode_number -= 1;
 
     if (fs.sb.inode_number == 0){
-        free_FS(fs);
+        // Re-initialize inode_array and bytes_array
+        free(fs.inode_array);
+        free(fs.bytes_array);
         fs.inode_array = malloc(sizeof(Inode));
         fs.bytes_array = malloc(sizeof(char*));
 
@@ -153,7 +169,7 @@ Splitted_path split_path(char * input_path) {
     splitted.components = malloc(1*sizeof(char*));
 
     if (input_path[0] != '/'){
-        printf("Path must start with /");
+        printf("Path must start with /\n");
         exit(1);
     }
 
@@ -232,6 +248,9 @@ long int find_dir_from_path(FileSystem fs, char * dir_path){
 // Find a file using its path and return its index
 // Return -1 if the file doesn't exist
 int find_file(FileSystem fs, char * file_path){
+    // Default value set to -1 (Not found)
+    int return_value = -1;
+
     Splitted_path splitted = split_path(file_path);
     char * file_name = splitted.components[splitted.number-1];
 
@@ -239,18 +258,21 @@ int find_file(FileSystem fs, char * file_path){
     char * dir_path = extract_dir_path(file_path);
     long int parent_id = find_dir_from_path(fs, dir_path);
     if (parent_id == -1){
-        return -1;   // Parent directory doesn't exist
+        return_value = -1;  // Parent directory doesn't exist
     }
 
     // Find a file in inode_array which matches the name and the parent_id
     for (int l=0; l<fs.sb.inode_number; l++){
         if (strncmp(fs.inode_array[l].name, file_name, strlen(file_name)) == 0 && fs.inode_array[l].parent_id == parent_id){
-            return l;
+            return_value = l;
+            break;
         }
     }
 
-    // No file matching the name and the parent_id inside the parent directory
-    return -1;
+    // Free memory
+    free(splitted.components);
+    free(dir_path);    
+    return return_value;
 }
 
 // Store a new Directory (supposing it doesn't exist) in the directory_array
