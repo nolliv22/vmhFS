@@ -7,7 +7,8 @@ int myFS_read(char * file_path){
         printf("File doesn't exist");
         return -1;
     } else {
-        printf("%s", fs.bytes_array[file_id]);
+        File file = fs.file_array[file_id];
+        printf("%s", file.bytes);
     }
 
     // Free memory

@@ -7,14 +7,14 @@
 #define WORD_SIZE 32    // Size for file, directory names
 
 // FILE SYSTEM STRUCTURES
-typedef struct {                    // INODE: information about a file
-    unsigned long int size;         // Number of bytes of the file associated with this inode
-    char name[WORD_SIZE];           // Name of the file
-    unsigned long int parent_id;    // The id of the file's parent directory 
+typedef struct {           // INODE: information about a file
+    long int size;         // Number of bytes of the file associated with this inode
+    char name[WORD_SIZE];  // Name of the file
+    long int parent_id;    // The id of the file's parent directory 
 } Inode;
 
 typedef struct {    // FILE: inode (information) + bytes (data) of the file
-    Inode inode;    // FInode of the file
+    Inode inode;    // Inode of the file
     char * bytes;   // Bytes of the file
 } File;
 
@@ -28,22 +28,25 @@ typedef struct {                    // DIRECTORY
     unsigned long int parent_id;    // The id of the parent of this directory (CONVENTION: -1 if it's an empty directory)
 } Directory;
 
-typedef struct {                            // SUPERBLOCK
-    unsigned long int inode_number;         // Number of file
-    unsigned long int directory_number;     // Number of directory
-    unsigned long int current_size;         // Size of the file system
-    unsigned long int max_size;             // Maximum size of the file system
+typedef struct {                    // SUPERBLOCK
+    long int file_number;           // Number of file
+    long int directory_number;      // Number of directory
+    long int current_size;          // Size of the file system
+    long int max_size;              // Maximum size of the file system
 } SuperBlock;
 
 typedef struct {                    // FILESYSTEM
     SuperBlock sb;                  // Superblock of the file system
-    Inode * inode_array;            // Array storing inode of files in the file system
-    char ** bytes_array;            // Array storing bytes of files in the file system
+    File * file_array;              // Array storing inode of files in the file system
     Directory * directory_array;    // Array storing directories in the file system
 } FileSystem;
 
 
 // FILE SYSTEM FUNCTIONS
+
+// Function definitions
+char * extract_dir_path(char * file_path);
+long int find_dir_from_path(FileSystem fs, char * dir_path);
 
 FileSystem get_FS(char * path){
     // Read a file system stored on the disk to the memory
@@ -51,114 +54,167 @@ FileSystem get_FS(char * path){
     //      path: the path of the file system on the disk
     // OUTPUT:
     //      fs: the file system structure
+    // TODO: handle file return code
 
     // Open the file on the disk
-    FILE * file;
-    file = fopen(path, "rb");
+    FILE * fs_file;
+    fs_file = fopen(path, "rb");
 
     // Initialize the empty file system struct
     FileSystem fs;
-    fs.directory_array = malloc(sizeof(Directory)*1);
-    fs.inode_array = malloc(sizeof(Inode)*1);
-    fs.bytes_array = malloc(sizeof(char *)*1);
     
-    // Filling the file system
     // Read the superblock from the file
-    fread(&fs.sb, sizeof(SuperBlock), 1, file);
-    
-    if (fs.sb.inode_number > 0){
-        fs.inode_array = malloc(sizeof(Inode)*fs.sb.inode_number);
-        fs.bytes_array = malloc(sizeof(char*)*fs.sb.inode_number);
+    fread(&fs.sb, sizeof(SuperBlock), 1, fs_file);
 
-        for (int i=0; i<fs.sb.inode_number; i++){
-            fread(&fs.inode_array[i], sizeof(Inode), 1, file);
+    // Read directories
+    if (fs.sb.directory_number > 0){
+        fs.directory_array = malloc(sizeof(Directory)*fs.sb.directory_number);
 
-            fs.bytes_array[i] = malloc(fs.inode_array[i].size);
-            fread(fs.bytes_array[i], fs.inode_array[i].size, 1, file);
+        for (int i=0; i<fs.sb.directory_number; i++){
+            Directory dir = fs.directory_array[i];
+
+            // Read directory
+            fread(&dir, sizeof(Directory), 1, fs_file);
         }
     }
-    
-    fclose(file);
+
+    // Read files
+    if (fs.sb.file_number > 0){
+        fs.file_array = malloc(sizeof(File)*fs.sb.file_number);
+
+        for (int j=0; j<fs.sb.file_number; j++){
+            File file = fs.file_array[j];
+
+            // Read file's inode
+            fread(&file.inode, sizeof(Inode), 1, fs_file);
+
+            // Read file's bytes
+            file.bytes = malloc(file.inode.size);
+            fread(file.bytes, file.inode.size, 1, fs_file);
+        }
+    }
+
+    fclose(fs_file);
     return fs;
 }
 
 int put_FS(char * path, FileSystem fs){
-    FILE * file;
-    file = fopen(path, "wb");
+    // Write a file system stored on the memory to the disk
+    // INPUT: 
+    //      path: the path of the file system on the disk
+    //      fs: the file system structure on the memory
+    // TODO: handle file return code
 
-    fwrite(&fs.sb, sizeof(SuperBlock), 1, file);
+    // Open the file on the disk
+    FILE * fs_file;
+    fs_file = fopen(path, "wb");
 
-    if (fs.sb.inode_number > 0){
-        for (int i=0; i<fs.sb.inode_number; i++){
-            fwrite(&fs.inode_array[i], sizeof(Inode), 1, file);
-            fwrite(fs.bytes_array[i], fs.inode_array[i].size, 1, file);
+    // Write superblock
+    fwrite(&fs.sb, sizeof(SuperBlock), 1, fs_file);
+
+    // Write directories
+    if (fs.sb.directory_number > 0){
+        for (int i=0; i<fs.sb.directory_number; i++){
+            Directory dir = fs.directory_array[i];
+
+            // Read directory
+            fwrite(&dir, sizeof(Directory), 1, fs_file);
         }
     }
-    
+
+    // Write files
+    if (fs.sb.file_number > 0){
+        for (int j=0; j<fs.sb.file_number; j++){
+            File file = fs.file_array[j];
+
+            // Write file's inode
+            fwrite(&file.inode, sizeof(Inode), 1, fs_file);
+
+            // Write file's bytes
+            fwrite(file.bytes, file.inode.size, 1, fs_file);
+        }
+    }
+
+    fclose(fs_file);
     return 0;
 }
 
 void free_FS(FileSystem fs){
-    free(fs.bytes_array);
-    free(fs.inode_array);
     free(fs.directory_array);
+    free(fs.file_array);
 }
 
-File getFile(char * input_path, char * destination_path){
-    File file;
+File get_file(FileSystem fs, char * input_path, char * destination_path){
+    // Get a file on the disk to work with it on the memory
+    // INPUT:
+    //      fs: file system
+    //      input_path: path of the file on the disk
+    //      destination_path: path of the file in the file system
+    // OUTPUT:
+    //      file: File structure on the memory
 
+    // Read the file
     FILE * input_file;
     input_file = fopen(input_path, "rb");
     // TODO: Check if file exist
 
+    // Get file size
     fseek(input_file, 0, SEEK_END);
     unsigned long int input_file_size = ftell(input_file);
     fseek(input_file, 0, SEEK_SET);
 
-    file.inode.size = input_file_size;
-    strcpy(file.inode.name, destination_path);  // Need to split the path
-    file.inode.parent_id = 0;                   // Need to get the parent directory
-                                                // Need to create recursively parent direcory to the root
+    // Store the file in the file_array
+    File file;
 
+    // Generate file's inode
+    file.inode.size = input_file_size;
+    strcpy(file.inode.name, destination_path);
+    
+    // TODO: Create intermediate directories if doesn't exist
+    // Find the file parent_id
+    char * dir_path = extract_dir_path(input_path);
+    long int parent_id = find_dir_from_path(fs, dir_path);
+    file.inode.parent_id = parent_id;
+
+    // Store file's bytes in a buffer
     file.bytes = malloc(file.inode.size);
     fread(file.bytes, input_file_size, 1, input_file);
 
     fclose(input_file);
-
     return file;
 }
 
-FileSystem add_inode(FileSystem fs, Inode inode, char * bytes){
-    fs.sb.inode_number += 1;
-    fs.sb.current_size += sizeof(Inode) + inode.size;
+FileSystem add_file(FileSystem fs, File file){
+    // Update superblock
+    fs.sb.file_number += 1;
+    fs.sb.current_size += sizeof(Inode) + file.inode.size;
 
-    fs.inode_array = (Inode*)realloc(fs.inode_array, sizeof(Inode)*fs.sb.inode_number);
-    fs.bytes_array = (char **)realloc(fs.bytes_array, sizeof(char*)*fs.sb.inode_number);
-
-    fs.inode_array[fs.sb.inode_number-1] = inode;
-    fs.bytes_array[fs.sb.inode_number-1] = bytes;
+    // Update file_array
+    fs.file_array = (File*)realloc(fs.file_array, sizeof(File)*fs.sb.file_number);
+    fs.file_array[fs.sb.file_number-1] = file;
 
     return fs;
 }
 
-FileSystem rm_inode(FileSystem fs, int i){
-    fs.sb.inode_number -= 1;
+FileSystem rm_file(FileSystem fs, int i){
+    File file = fs.file_array[i];
 
-    if (fs.sb.inode_number == 0){
+    // Update superblock
+    fs.sb.file_number -= 1;
+    fs.sb.current_size -= sizeof(Inode) + file.inode.size;
+
+    // Update file_array
+    if (fs.sb.file_number == 0){
         // Re-initialize inode_array and bytes_array
-        free(fs.inode_array);
-        free(fs.bytes_array);
-        fs.inode_array = malloc(sizeof(Inode));
-        fs.bytes_array = malloc(sizeof(char*));
+        free(fs.file_array);
+        fs.file_array = malloc(sizeof(File)*1);
 
     } else {
-        for (int k=i; k<fs.sb.inode_number; k++){
-            fs.bytes_array[k] = fs.bytes_array[k+1];
-            fs.inode_array[k] = fs.inode_array[k+1];
+        for (int k=i; k<fs.sb.file_number; k++){
+            fs.file_array[k] = fs.file_array[k+1];
         }
 
-        fs.inode_array = (Inode*)realloc(fs.inode_array, sizeof(Inode)*fs.sb.inode_number);
-        fs.bytes_array = (char**)realloc(fs.bytes_array, sizeof(char*)*fs.sb.inode_number);
+        fs.file_array = (File*)realloc(fs.file_array, sizeof(File)*fs.sb.file_number);
     }
 
     return fs;
@@ -242,12 +298,13 @@ long int find_dir_from_path(FileSystem fs, char * dir_path){
         }
     }
 
+    // TODO: free splitted
     return current_parent_id;
 }
 
 // Find a file using its path and return its index
 // Return -1 if the file doesn't exist
-int find_file(FileSystem fs, char * file_path){
+long int find_file(FileSystem fs, char * file_path){
     // Default value set to -1 (Not found)
     int return_value = -1;
 
@@ -262,9 +319,10 @@ int find_file(FileSystem fs, char * file_path){
     }
 
     // Find a file in inode_array which matches the name and the parent_id
-    for (int l=0; l<fs.sb.inode_number; l++){
-        if (strncmp(fs.inode_array[l].name, file_name, strlen(file_name)) == 0 && fs.inode_array[l].parent_id == parent_id){
-            return_value = l;
+    for (int i=0; i<fs.sb.file_number; i++){
+        File file = fs.file_array[i];
+        if (strncmp(file.inode.name, file_name, strlen(file_name)) == 0 && file.inode.parent_id == parent_id){
+            return_value = i;
             break;
         }
     }
