@@ -1,50 +1,52 @@
+// TESTING FILESYSTEM BY ADDING MANUALLY ELEMENT IF THE
+// FUNCTION NEEDED IS NOT FINISHED YET
 int test(){
     FileSystem fs;
 
-    fs.sb.directory_number = 3;
+    // DIRECTORY
+    fs.sb.directory_number = 0;
     fs.directory_array = malloc(sizeof(Directory)*fs.sb.directory_number);
 
-    Directory root;
-    strcpy(root.name, "/");
-    root.parent_id = 0;    
-    fs.directory_array[0] = root;
+    fs = add_directory(fs, "root", 0);
+    fs = add_directory(fs, "dir1", 0);
+    fs = add_directory(fs, "dir2", 1);
 
-    Directory dir1;
-    strcpy(dir1.name, "dir1");
-    dir1.parent_id = 0;
-    fs.directory_array[1] = dir1;
+    // Find dir from path
+    printf("Find dir from path:\n");
+    printf("%ld\n", find_dir_from_path(fs, "/dir1"));
+    printf("%ld\n", find_dir_from_path(fs, "/dir2"));
+    printf("%ld\n", find_dir_from_path(fs, "/dir1/dir2"));
 
-    Directory dir2;
-    strcpy(dir2.name, "dir2");
-    dir2.parent_id = 1;
-    fs.directory_array[2] = dir2;
+    // Find dir with name and parent_id
+    printf("Find dir:\n");
+    printf("%ld\n", find_directory(fs, "dir1", 0));
+    printf("%ld\n", find_directory(fs, "dir2", 0));
+    printf("%ld\n", find_directory(fs, "dir1", 1));
+    printf("%ld\n", find_directory(fs, "dir2", 1));
 
-    fs.sb.inode_number =  2;
+    // FILE
+    fs.sb.file_number = 0;
+    fs.file_array = malloc(sizeof(File)*fs.sb.file_number);
 
-    Inode foo1;
-    strcpy(foo1.name, "foo1");
-    foo1.parent_id = 1;
+    File foo1;
+    strcpy(foo1.inode.name, "foo1");
+    foo1.inode.parent_id = 1;
+    foo1.bytes = "foo1";
     
-    Inode foo2;
-    strcpy(foo2.name, "foo2");
-    foo2.parent_id = 2;
+    File foo2;
+    strcpy(foo2.inode.name, "foo2");
+    foo2.inode.parent_id = 2;
+    foo2.bytes = "foo2";
 
-    fs.inode_array = malloc(sizeof(Inode)*fs.sb.inode_number);
-    fs.inode_array[0] = foo1;
-    fs.inode_array[1] = foo2;
+    fs = add_file(fs, foo1);
+    fs = add_file(fs, foo2);
 
-    // printf("%d\n", find_file(fs, "/dir1/foo1"));
-    // printf("%d\n", find_file(fs, "/dir2/foo1"));
-    // printf("%d\n", find_file(fs, "/dir1/foo2"));
-    // printf("%d\n", find_file(fs, "/dir2/foo2"));
+    printf("Find file:\n"); 
+    printf("%ld\n", find_file(fs, "/dir1/foo1"));
+    printf("%ld\n", find_file(fs, "/dir2/foo1"));
+    printf("%ld\n", find_file(fs, "/dir1/foo2"));
+    printf("%ld\n", find_file(fs, "/dir1/dir2/foo2"));
 
-    char ** splitted = split_path("/dir1/dir2/foo1");
-
-    printf("%s\n", splitted[0]);
-    printf("%s\n", splitted[1]);
-    printf("%s\n", splitted[2]);
-
-    free(splitted);
-
+    free_FS(fs);
     return 0;
 }
