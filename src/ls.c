@@ -1,22 +1,33 @@
-int myFS_ls(){
+int myFS_ls(char * path, bool r, bool d){
     FileSystem fs = get_FS(PATH);
-
-    printf("FileSystem size: %ld B\n", fs.sb.current_size);
-    printf("FileSystem max size: %ld B\n", fs.sb.max_size);
-    printf("Inodes: %ld\n", fs.sb.inode_number);
-    printf("-----------------------------------------------\n");
-
-    if (fs.sb.inode_number > 0){
-        for (int i=0; i<fs.sb.inode_number; i++){
-            printf("Size: %ld B\n", fs.inode_array[i].size);
-            printf("Name: %s\n", fs.inode_array[i].name);
-            printf("Parent: %ld\n", fs.inode_array[i].parent_id);
-            printf("-----------------------------------------------\n");
+    long int dir_index = find_dir_from_path(fs,path);
+    if (fs.sb.file_number > 0){
+        if(r == false){
+            if(dir_index == -1){
+                printf("directory don't exist");
+            }
+            else{
+                for(int i = 0; i< fs.sb.file_number; i++){
+                    if(fs.file_array[i].inode.parent_id == dir_index){
+                        printf("%s %dMB",fs.file_array[i].inode.name,fs.file_array[i].inode.size/1000);
+                    }
+                }
+            }
         }
-    } else {
-        printf("Empty\n");
+        else{ //files inside this directory
+             for(int i = 0; i< fs.sb.file_number; i++){
+                    if(fs.file_array[i].inode.parent_id == dir_index){
+                        printf("%s %dMB",fs.file_array[i].inode.name,fs.file_array[i].inode.size/1000);
+            myFS_ls_recur(fs,dir_index); // files inside its children directory
+                    }
+                }
+        }
     }
 
+    else {
+        printf("File system has no files\n");
+    }
+    // Free memory
     free_FS(fs);
     return 0;
 }
