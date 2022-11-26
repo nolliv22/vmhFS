@@ -6,6 +6,7 @@ int myFS_create(int size){       // size in MB
     
     // Initialize superblock
     fs.sb.max_size = size*1024*1024;
+    fs.sb.directory_number = 0
     fs.sb.file_number =  0;
     fs.sb.current_size = sizeof(SuperBlock);
 
