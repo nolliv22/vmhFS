@@ -1,6 +1,8 @@
 int myFS_write(char * input_path, char * destination_path){
     FileSystem fs = get_FS(PATH);
-    
+
+    // Generate File struct from file
+    fs = create_dir_from_path(fs, destination_path);
     File file = get_file(fs, input_path, destination_path);
 
     // If the file size is greater than the file system max size

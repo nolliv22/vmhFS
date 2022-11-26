@@ -45,9 +45,26 @@ typedef struct {                    // FILESYSTEM
 // FILE SYSTEM FUNCTIONS
 
 // Function definitions
-char * extract_dir_path(char * file_path);
-long int find_dir_from_path(FileSystem fs, char * dir_path);
+FileSystem get_FS(char * path);
+int put_FS(char * path, FileSystem fs);
+void free_FS(FileSystem fs);
+
+FileSystem create_dir_from_path(FileSystem fs, char * destination_path);
+File get_file(FileSystem fs, char * input_path, char * destination_path);
+
+FileSystem add_file(FileSystem fs, File file);
+FileSystem rm_file(FileSystem fs, int i);
+
 Splitted_path split_path(char * input_path);
+char * extract_dir_path(char * file_path);
+
+unsigned long int find_directory(FileSystem fs, char *name, unsigned long int parent_id);
+long int find_dir_from_path(FileSystem fs, char * dir_path);
+
+long int find_file(FileSystem fs, char * file_path);
+
+FileSystem add_directory(FileSystem fs, char * name, unsigned long int parent_id);
+FileSystem rm_directory(FileSystem fs, unsigned long int id);
 
 FileSystem get_FS(char * path){
     // Read a file system stored on the disk to the memory
@@ -151,6 +168,42 @@ void free_FS(FileSystem fs){
     free(fs.file_array);
 }
 
+
+FileSystem create_dir_from_path(FileSystem fs, char * destination_path){
+    // Create all intermediate directories from a path
+    
+    // Find the file parent_id
+    char * dir_path = extract_dir_path(destination_path);
+    long int is_dir = find_dir_from_path(fs, dir_path);
+
+    // TODO: Create all intermediate directories if the directory doesn't exist
+    if (is_dir == -1){
+        Splitted_path splitted_dir = split_path(dir_path);
+        long int current_parent_id = 0; // Root's directory id
+
+        for (int i=0; i<splitted_dir.number; i++){
+            char * dir_name = splitted_dir.components[i];
+            long int dir_id = find_directory(fs, dir_name, current_parent_id);
+
+            if (dir_id == -1){
+                // If the directory doesn't exist, then create if
+                fs = add_directory(fs, dir_name, current_parent_id);
+                current_parent_id = fs.sb.directory_number-1;
+            } else {
+                // Else, the directory exists, then we go inside
+                current_parent_id = dir_id;
+            }
+        }
+        
+        free(splitted_dir.components);
+    }
+    
+    // Else: nothing to change
+
+    free(dir_path);
+    return fs;
+}
+
 File get_file(FileSystem fs, char * input_path, char * destination_path){
     // Get a file on the disk to work with it on the memory
     // INPUT:
@@ -178,20 +231,19 @@ File get_file(FileSystem fs, char * input_path, char * destination_path){
     Splitted_path splitted = split_path(destination_path);
     char * filename = splitted.components[splitted.number-1];
     strcpy(file.inode.name, filename);
-
     
-    // TODO: Create intermediate directories if doesn't exist
-    // Find the file parent_id
     char * dir_path = extract_dir_path(destination_path);
-    long int parent_id = find_dir_from_path(fs, dir_path);
-    file.inode.parent_id = parent_id;
-
+    long int dir_id = find_dir_from_path(fs, dir_path);
+    file.inode.parent_id = dir_id;
 
     // Store file's bytes in a buffer
     file.bytes = malloc(file.inode.size);
     fread(file.bytes, input_file_size, 1, input_file);
 
     fclose(input_file);
+
+    free(splitted.components);
+    free(dir_path);
     return file;
 }
 
@@ -234,25 +286,32 @@ FileSystem rm_file(FileSystem fs, int i){
 Splitted_path split_path(char * input_path) {
     Splitted_path splitted;
     splitted.components = malloc(1*sizeof(char*));
-
+    
     if (input_path[0] != '/'){
         printf("Path must start with /\n");
         exit(1);
     }
 
     int i = 0;
+    int j = 0;
     splitted.number = 0;
 
     while (input_path[i] != '\0'){
         if (input_path[i] == '/'){
             i++;
+            if (splitted.number>0){
+                splitted.components[splitted.number-1][j] = '\0';
+            }
+            j = 0;
+
             splitted.number++;
             splitted.components = (char**)realloc(splitted.components, splitted.number*sizeof(char*));
             splitted.components[splitted.number-1] = malloc(WORD_SIZE*sizeof(char));
 
         } else {
-            strncat(splitted.components[splitted.number-1], &input_path[i], 1);
+            splitted.components[splitted.number-1][j] = input_path[i];
             i++;
+            j++;
         }
     }
 
@@ -357,7 +416,6 @@ long int find_file(FileSystem fs, char * file_path){
 
 // Store a new Directory (supposing it doesn't exist) in the directory_array
 FileSystem add_directory(FileSystem fs, char * name, unsigned long int parent_id){
-
     // Find empty to overwrite
     for(int i=0; i<fs.sb.directory_number; i++){
         if(fs.directory_array[i].parent_id == -1){

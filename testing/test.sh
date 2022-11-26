@@ -29,16 +29,21 @@ echo "Random string 123" > /tmp/foo.txt
 # Write your own test here
 
 
-# PREDEFINED TESTS (uncomment to test)
+# PREDEFINED TESTS (please follow the order)
 
-# # Remove old file test
+# # 1) WRITE: Overwrite old file
 # $EXEC $FS write /tmp/foo.txt /foo.txt
 # $EXEC $FS write /tmp/6mb /6mb1
 # $EXEC $FS ls
 # $EXEC $FS write /tmp/6mb /6mb2
 # $EXEC $FS ls
 
-# # Read file
+# # 2) READ: print file content to stdout
 # $EXEC $FS write /tmp/foo.txt /foo.txt
 # $EXEC $FS ls
 # $EXEC $FS read /foo.txt
+
+# # 3) WRITE: Write file and create directories that don't exist
+# $EXEC $FS write /tmp/foo.txt /dir1/dir2/foo.txt
+# $EXEC $FS ls
+# $EXEC $FS read /dir1/dir2/foo.txt
