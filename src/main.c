@@ -89,12 +89,18 @@ int main(int argc, char * argv[]){
                 myFS_ls(argv[3],false,true);
             } else if(argc == 4){
                 myFS_ls(argv[4], true, true);
+            }else{ printf( "Usage: vhmFS FILE ls [OPTIONS] DIR_PATH\n"
+                        "\tOPTIONS:\n"
+                        "\t\t-r: recurse to all sub-directories\n"
+                        "\t\t-d: sort files by date\n"); 
+                exit(0);
             }
         }
 
+
         else if (strcmp("size", command) == 0){
             if (argc == 3){
-                //myFS_size();
+                //myFS_ls();
             } else {
                 printf( "Usage: vhmFS FILE size [OPTIONS] DIR_PATH\n"
                         "\tOPTIONS:\n"

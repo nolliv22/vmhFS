@@ -6,13 +6,14 @@ int myFS_create(int size){       // size in MB
     
     // Initialize superblock
     fs.sb.max_size = size*1024*1024;
+    fs.sb.directory_number = 0;
     fs.sb.file_number =  0;
     fs.sb.current_size = sizeof(SuperBlock);
 
     // Initialize root directory
     fs.directory_array = malloc(sizeof(Directory)*1);
     fs.file_array = malloc(sizeof(File)*1);
-    fs = add_directory(fs, "root", 0);
+    fs = add_directory(fs, "/", 0);
     
     // Store the file system to the disk
     put_FS(PATH, fs);

@@ -45,8 +45,27 @@ typedef struct {                    // FILESYSTEM
 // FILE SYSTEM FUNCTIONS
 
 // Function definitions
+FileSystem get_FS(char * path);
+int put_FS(char * path, FileSystem fs);
+void free_FS(FileSystem fs);
+
+FileSystem create_dir_from_path(FileSystem fs, char * destination_path);
+File get_file(FileSystem fs, char * input_path, char * destination_path);
+
+FileSystem add_file(FileSystem fs, File file);
+FileSystem rm_file(FileSystem fs, int i);
+
+Splitted_path split_path(char * input_path);
+int free_splitted(Splitted_path splitted);
 char * extract_dir_path(char * file_path);
+
+unsigned long int find_directory(FileSystem fs, char *name, unsigned long int parent_id);
 long int find_dir_from_path(FileSystem fs, char * dir_path);
+
+long int find_file(FileSystem fs, char * file_path);
+
+FileSystem add_directory(FileSystem fs, char * name, unsigned long int parent_id);
+FileSystem rm_directory(FileSystem fs, unsigned long int id);
 
 FileSystem get_FS(char * path){
     // Read a file system stored on the disk to the memory
@@ -71,10 +90,13 @@ FileSystem get_FS(char * path){
         fs.directory_array = malloc(sizeof(Directory)*fs.sb.directory_number);
 
         for (int i=0; i<fs.sb.directory_number; i++){
-            Directory dir = fs.directory_array[i];
+            Directory dir;
 
             // Read directory
             fread(&dir, sizeof(Directory), 1, fs_file);
+
+            // Save the directory to the directory_array
+            fs.directory_array[i] = dir;
         }
     }
 
@@ -83,7 +105,7 @@ FileSystem get_FS(char * path){
         fs.file_array = malloc(sizeof(File)*fs.sb.file_number);
 
         for (int j=0; j<fs.sb.file_number; j++){
-            File file = fs.file_array[j];
+            File file;
 
             // Read file's inode
             fread(&file.inode, sizeof(Inode), 1, fs_file);
@@ -91,6 +113,9 @@ FileSystem get_FS(char * path){
             // Read file's bytes
             file.bytes = malloc(file.inode.size);
             fread(file.bytes, file.inode.size, 1, fs_file);
+
+            // Save the file to the file_array
+            fs.file_array[j] = file;
         }
     }
 
@@ -144,6 +169,42 @@ void free_FS(FileSystem fs){
     free(fs.file_array);
 }
 
+
+FileSystem create_dir_from_path(FileSystem fs, char * destination_path){
+    // Create all intermediate directories from a path
+    
+    // Find the file parent_id
+    char * dir_path = extract_dir_path(destination_path);
+    long int is_dir = find_dir_from_path(fs, dir_path);
+
+    // TODO: Create all intermediate directories if the directory doesn't exist
+    if (is_dir == -1){
+        Splitted_path splitted_dir = split_path(dir_path);
+        long int current_parent_id = 0; // Root's directory id
+
+        for (int i=0; i<splitted_dir.number; i++){
+            char * dir_name = splitted_dir.components[i];
+            long int dir_id = find_directory(fs, dir_name, current_parent_id);
+
+            if (dir_id == -1){
+                // If the directory doesn't exist, then create if
+                fs = add_directory(fs, dir_name, current_parent_id);
+                current_parent_id = fs.sb.directory_number-1;
+            } else {
+                // Else, the directory exists, then we go inside
+                current_parent_id = dir_id;
+            }
+        }
+        
+        free_splitted(splitted_dir);
+    }
+    
+    // Else: nothing to change
+
+    free(dir_path);
+    return fs;
+}
+
 File get_file(FileSystem fs, char * input_path, char * destination_path){
     // Get a file on the disk to work with it on the memory
     // INPUT:
@@ -168,19 +229,22 @@ File get_file(FileSystem fs, char * input_path, char * destination_path){
 
     // Generate file's inode
     file.inode.size = input_file_size;
-    strcpy(file.inode.name, destination_path);
+    Splitted_path splitted = split_path(destination_path);
+    char * filename = splitted.components[splitted.number-1];
+    strcpy(file.inode.name, filename);
     
-    // TODO: Create intermediate directories if doesn't exist
-    // Find the file parent_id
-    char * dir_path = extract_dir_path(input_path);
-    long int parent_id = find_dir_from_path(fs, dir_path);
-    file.inode.parent_id = parent_id;
+    char * dir_path = extract_dir_path(destination_path);
+    long int dir_id = find_dir_from_path(fs, dir_path);
+    file.inode.parent_id = dir_id;
 
     // Store file's bytes in a buffer
     file.bytes = malloc(file.inode.size);
     fread(file.bytes, input_file_size, 1, input_file);
 
     fclose(input_file);
+
+    free_splitted(splitted);
+    free(dir_path);
     return file;
 }
 
@@ -220,32 +284,44 @@ FileSystem rm_file(FileSystem fs, int i){
     return fs;
 }
 
-Splitted_path split_path(char * input_path) {
+Splitted_path split_path(char * path){
     Splitted_path splitted;
-    splitted.components = malloc(1*sizeof(char*));
-
-    if (input_path[0] != '/'){
-        printf("Path must start with /\n");
-        exit(1);
-    }
-
-    int i = 0;
     splitted.number = 0;
 
-    while (input_path[i] != '\0'){
-        if (input_path[i] == '/'){
-            i++;
-            splitted.number++;
-            splitted.components = (char**)realloc(splitted.components, splitted.number*sizeof(char*));
-            splitted.components[splitted.number-1] = malloc(WORD_SIZE*sizeof(char));
+    char path_const[strlen(path)];
+    strcpy(path_const, path);
 
-        } else {
-            strncat(splitted.components[splitted.number-1], &input_path[i], 1);
-            i++;
+    if (strcmp(path, "/")==0){
+        splitted.components = calloc(1,sizeof(char*));
+        splitted.components[0] = "/";
+        return splitted;
+    }
+    
+    for (int k=0; k<strlen(path_const); k++){
+        if (path_const[k] == '/'){
+            splitted.number++;
         }
+    }
+    
+    int i = 0;
+    char *p = strtok (path_const, "/");
+    splitted.components = calloc(splitted.number,sizeof(char*));
+
+    while (p != NULL){
+        splitted.components[i] = malloc(WORD_SIZE*sizeof(char));
+        strcpy(splitted.components[i], p);
+        i++;
+        p = strtok(NULL, "/");
     }
 
     return splitted;   
+}
+
+int free_splitted(Splitted_path splitted){
+    for (int i=0; i<splitted.number; i++){
+        free(splitted.components[i]);
+    }
+    return 0;
 }
 
 // Extract only directory path from file path (e.g. /dir1/dir2/foo -> /dir1/dir2)
@@ -258,9 +334,17 @@ char * extract_dir_path(char * file_path){
         }
         i++;
     }
-    
-    char * dir_path = malloc(last_slash*sizeof(char));
-    memmove(dir_path, file_path, last_slash);
+    printf("A: %d\n", last_slash);
+
+    char * dir_path;
+    if (last_slash == 0){
+        dir_path = malloc(2*sizeof(char));
+        strcpy(dir_path, "/");
+    } else {
+        dir_path = malloc(last_slash*sizeof(char));
+        strncpy(dir_path, file_path, last_slash);
+        dir_path[last_slash] = '\0';
+    }
 
     return dir_path;
 }
@@ -269,8 +353,7 @@ char * extract_dir_path(char * file_path){
 // Return -1 if the directory doesn't exist
 unsigned long int find_directory(FileSystem fs, char *name, unsigned long int parent_id){
     for (int i=0; i<fs.sb.directory_number; i++){
-        Directory dir;
-        dir = fs.directory_array[i];
+        Directory dir = fs.directory_array[i];
 
         if (strncmp(dir.name, name, strlen(name)) == 0 && dir.parent_id == parent_id){
             return i;
@@ -283,13 +366,14 @@ unsigned long int find_directory(FileSystem fs, char *name, unsigned long int pa
 // Find a directory knowing its path only
 // Return -1 if the directory doesn't exist
 long int find_dir_from_path(FileSystem fs, char * dir_path){
+    printf("hello\n");
     Splitted_path splitted = split_path(dir_path);
-
+     printf("hello\n");
     unsigned long int current_parent_id = 0;    // Root
 
     for (int k=0; k<splitted.number; k++){
         unsigned long int dir_id = find_directory(fs, splitted.components[k], current_parent_id);
-    
+
         if (dir_id == -1){
             // Dir not found
             return -1;
@@ -298,7 +382,7 @@ long int find_dir_from_path(FileSystem fs, char * dir_path){
         }
     }
 
-    // TODO: free splitted
+    free_splitted(splitted);
     return current_parent_id;
 }
 
@@ -328,14 +412,13 @@ long int find_file(FileSystem fs, char * file_path){
     }
 
     // Free memory
-    free(splitted.components);
+    free_splitted(splitted);
     free(dir_path);    
     return return_value;
 }
 
 // Store a new Directory (supposing it doesn't exist) in the directory_array
 FileSystem add_directory(FileSystem fs, char * name, unsigned long int parent_id){
-
     // Find empty to overwrite
     for(int i=0; i<fs.sb.directory_number; i++){
         if(fs.directory_array[i].parent_id == -1){
@@ -370,26 +453,24 @@ FileSystem rm_directory(FileSystem fs, unsigned long int id){
 
 //children directory
 typedef struct {        
-    int **children_index;  
+    int children_index[20];  
     int children_num;         
 } dir_children ;
 
 
 dir_children get_dir_children(FileSystem fs, unsigned long int id)
 {   dir_children DC;
-    DC.children_index=NULL;
     DC.children_num=0;
     for (int i=0; i<fs.sb.directory_number;i++)
     {   if (fs.directory_array[i].parent_id==id)
         {   DC.children_num++; 
-            DC.children_index = (int**)realloc(DC.children_index, sizeof(int)*DC.children_num);
-            DC.children_index[DC.children_num-1] = i;     
+            DC.children_index[DC.children_num-1]=i;
         }
     }
     return DC; 
 }
-
-int myFS_ls_recur(FileSystem fs, int id)
+int myFS_ls_recur(FileSystem fs, unsigned long int id);
+int myFS_ls_recur(FileSystem fs, unsigned long int id)
 {
     dir_children DC=get_dir_children(fs,id);
     if (DC.children_index==NULL)
@@ -400,11 +481,12 @@ int myFS_ls_recur(FileSystem fs, int id)
         for(int l=0;l<DC.children_num;l++){
             for(int i = 0; i< fs.sb.file_number; i++){
                 if(fs.file_array[i].inode.parent_id == DC.children_index[l]){
-                    printf("%s %dMB",fs.file_array[i].inode.name,fs.file_array[i].inode.size/1000);
+                    printf("%s %ldMB",fs.file_array[i].inode.name,fs.file_array[i].inode.size/1000);
                 }
             } 
         myFS_ls_recur(fs,DC.children_index[l]);
         }
         
     } 
+    return 0;
 }
