@@ -28,6 +28,11 @@ int test(){
     fs.sb.file_number = 0;
     fs.file_array = malloc(sizeof(File)*fs.sb.file_number);
 
+    File foo0;
+    strcpy(foo0.inode.name, "foo0");
+    foo0.inode.parent_id = 0;
+    foo0.bytes = "foo0";
+
     File foo1;
     strcpy(foo1.inode.name, "foo1");
     foo1.inode.parent_id = 1;
@@ -38,12 +43,17 @@ int test(){
     foo2.inode.parent_id = 2;
     foo2.bytes = "foo2";
 
+    fs = add_file(fs, foo0);
     fs = add_file(fs, foo1);
     fs = add_file(fs, foo2);
 
-    printf("Find file:\n"); 
+    printf("Find file:\n");
+    printf("%ld\n", find_file(fs, "/foo0"));
+    printf("%ld\n", find_file(fs, "/dir1/foo0"));
+
     printf("%ld\n", find_file(fs, "/dir1/foo1"));
-    printf("%ld\n", find_file(fs, "/dir2/foo1"));
+    printf("%ld\n", find_file(fs, "/dir1/dir2/foo1"));
+    
     printf("%ld\n", find_file(fs, "/dir1/foo2"));
     printf("%ld\n", find_file(fs, "/dir1/dir2/foo2"));
 
