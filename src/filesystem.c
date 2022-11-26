@@ -369,7 +369,7 @@ FileSystem rm_directory(FileSystem fs, unsigned long int id){
 }
 
 typedef struct {        
-    int **children_index;  
+    int children_index[20];  
     int children_num;         
 } dir_children ;
 
@@ -378,13 +378,11 @@ typedef struct {
 children and their number knowing the index of the directory*/
 dir_children get_dir_children(FileSystem fs, unsigned long int id)
 {   dir_children DC;
-    DC.children_index=NULL;
     DC.children_num=0;
     for (int i=0; i<fs.sb.directory_number;i++)
     {   if (fs.directory_array[i].parent_id==id)
         {   DC.children_num++; 
-            DC.children_index = (int**)realloc(DC.children_index, sizeof(int)*DC.children_num);
-            DC.children_index[DC.children_num-1]=i;     
+            DC.children_index[DC.children_num-1]=i;
         }
     }
     return DC; 
@@ -411,7 +409,7 @@ long int size_dir_files(FileSystem fs, int dir_index)
 long int myFS_size_recur(FileSystem fs, int id)
 {
     dir_children DC=get_dir_children(fs,id);
-    if (DC.children_index==NULL)
+    if (DC.children_num==0)
     {   
         return size_dir_files(fs,id);
     }
@@ -432,6 +430,8 @@ typedef struct{
 //Convert the size to the desired unit
 size_info convert_size(long int size3,char * size_unit)
 {   size_info mysize;
+mysize.number=0;
+mysize.unit=NULL;
     if (strncmp(size_unit,"-b",2)==0)
     {
        strcpy(mysize.unit,"B");

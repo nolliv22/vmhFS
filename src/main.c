@@ -85,7 +85,7 @@ int main(int argc, char * argv[]){
         }
 
         else if (strcmp("ls", command) == 0){
-            if (argc == 3){
+            if (argc == 4){
                 myFS_ls();
             } else {
                 printf( "Usage: vhmFS FILE ls [OPTIONS] DIR_PATH\n"
@@ -98,9 +98,7 @@ int main(int argc, char * argv[]){
         }
 
         else if (strcmp("size", command) == 0){
-            if (argc == 3){
-                myFS_ls();
-            } else {
+            if (argc <5 || argc>7){
                 printf( "Usage: vhmFS FILE size [OPTIONS] DIR_PATH\n"
                         "\tOPTIONS:\n"
                         "\t\t-r: recurse to all sub-directories\n"
@@ -108,6 +106,22 @@ int main(int argc, char * argv[]){
                         "\t\t-stat: advanced information about current file system\n");
                 // TODO: Help for the command "size"
                 exit(0);
+                myFS_ls();
+            } else if(argc==7)
+            {
+                myFS_size(true,argv[4],true,argv[6]);
+            } else if( argc==5)
+            {
+                myFS_size(false,argv[3],false,argv[4]);
+            } else if(argc==6)
+            {     if(strncmp(argv[3],"-r",2)==0)
+                    {
+                        myFS_size(true,argv[4],false,argv[5]);
+                    }
+                else
+                {
+                   myFS_size(false,argv[4],true,argv[5]); 
+                }
             }
         }
 
