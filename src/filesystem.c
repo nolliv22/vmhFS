@@ -47,6 +47,7 @@ typedef struct {                    // FILESYSTEM
 // Function definitions
 char * extract_dir_path(char * file_path);
 long int find_dir_from_path(FileSystem fs, char * dir_path);
+Splitted_path split_path(char * input_path);
 
 FileSystem get_FS(char * path){
     // Read a file system stored on the disk to the memory
@@ -71,10 +72,13 @@ FileSystem get_FS(char * path){
         fs.directory_array = malloc(sizeof(Directory)*fs.sb.directory_number);
 
         for (int i=0; i<fs.sb.directory_number; i++){
-            Directory dir = fs.directory_array[i];
+            Directory dir;
 
             // Read directory
             fread(&dir, sizeof(Directory), 1, fs_file);
+
+            // Save the directory to the directory_array
+            fs.directory_array[i] = dir;
         }
     }
 
@@ -83,7 +87,7 @@ FileSystem get_FS(char * path){
         fs.file_array = malloc(sizeof(File)*fs.sb.file_number);
 
         for (int j=0; j<fs.sb.file_number; j++){
-            File file = fs.file_array[j];
+            File file;
 
             // Read file's inode
             fread(&file.inode, sizeof(Inode), 1, fs_file);
@@ -91,6 +95,9 @@ FileSystem get_FS(char * path){
             // Read file's bytes
             file.bytes = malloc(file.inode.size);
             fread(file.bytes, file.inode.size, 1, fs_file);
+
+            // Save the file to the file_array
+            fs.file_array[j] = file;
         }
     }
 
@@ -165,14 +172,16 @@ File get_file(FileSystem fs, char * input_path, char * destination_path){
 
     // Store the file in the file_array
     File file;
-
+    
     // Generate file's inode
     file.inode.size = input_file_size;
-    strcpy(file.inode.name, destination_path);
+    Splitted_path splitted = split_path(destination_path);
+    char * filename = splitted.components[splitted.number-1];
+    strcpy(file.inode.name, filename);
     
     // TODO: Create intermediate directories if doesn't exist
     // Find the file parent_id
-    char * dir_path = extract_dir_path(input_path);
+    char * dir_path = extract_dir_path(destination_path);
     long int parent_id = find_dir_from_path(fs, dir_path);
     file.inode.parent_id = parent_id;
 
@@ -223,7 +232,6 @@ FileSystem rm_file(FileSystem fs, int i){
 Splitted_path split_path(char * input_path) {
     Splitted_path splitted;
     splitted.components = malloc(1*sizeof(char*));
-
     if (input_path[0] != '/'){
         printf("Path must start with /\n");
         exit(1);
@@ -258,9 +266,14 @@ char * extract_dir_path(char * file_path){
         }
         i++;
     }
-    
-    char * dir_path = malloc(last_slash*sizeof(char));
-    memmove(dir_path, file_path, last_slash);
+
+    char * dir_path;
+    if (last_slash == 0){
+        dir_path = "/";
+    } else {
+        dir_path = malloc(last_slash*sizeof(char));
+        memmove(dir_path, file_path, last_slash);
+    }
 
     return dir_path;
 }
@@ -310,6 +323,7 @@ long int find_file(FileSystem fs, char * file_path){
 
     Splitted_path splitted = split_path(file_path);
     char * file_name = splitted.components[splitted.number-1];
+    printf("%s\n", splitted.components[splitted.number-1]);
 
     // Check if the parent directory exists
     char * dir_path = extract_dir_path(file_path);

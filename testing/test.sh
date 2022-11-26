@@ -19,4 +19,15 @@ FS="/tmp/tmpFS"
 echo "Create a 10 MB file system"
 $EXEC $FS create 10
 
-# 
+# Generating file
+dd if=/dev/zero of=/tmp/6mb bs=1M count=6
+echo "Random string 123" > /tmp/foo.txt 
+
+# Write your own test here
+
+# This is just an example
+$EXEC $FS write /tmp/foo.txt /foo.txt
+$EXEC $FS write /tmp/6mb /6mb1
+$EXEC $FS ls
+$EXEC $FS write /tmp/6mb /6mb2
+$EXEC $FS ls
