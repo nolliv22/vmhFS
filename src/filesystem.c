@@ -56,6 +56,7 @@ FileSystem add_file(FileSystem fs, File file);
 FileSystem rm_file(FileSystem fs, int i);
 
 Splitted_path split_path(char * input_path);
+int free_splitted(Splitted_path splitted);
 char * extract_dir_path(char * file_path);
 
 unsigned long int find_directory(FileSystem fs, char *name, unsigned long int parent_id);
@@ -195,7 +196,7 @@ FileSystem create_dir_from_path(FileSystem fs, char * destination_path){
             }
         }
         
-        free(splitted_dir.components);
+        free_splitted(splitted_dir);
     }
     
     // Else: nothing to change
@@ -242,7 +243,7 @@ File get_file(FileSystem fs, char * input_path, char * destination_path){
 
     fclose(input_file);
 
-    free(splitted.components);
+    free_splitted(splitted);
     free(dir_path);
     return file;
 }
@@ -283,44 +284,44 @@ FileSystem rm_file(FileSystem fs, int i){
     return fs;
 }
 
-Splitted_path split_path(char * input_path) {
+Splitted_path split_path(char * path){
     Splitted_path splitted;
-    splitted.components = malloc(1*sizeof(char*));
-    
-    if (input_path[0] != '/'){
-        printf("Path must start with /\n");
-        exit(1);
-    }
-
-    int i = 0;
-    int j = 0;
     splitted.number = 0;
 
-    while (input_path[i] != '\0'){
-        if (input_path[i] == '/'){
-            i++;
-            if (splitted.number>0){
-                splitted.components[splitted.number-1][j] = '\0';
-            }
-            j = 0;
+    char path_const[strlen(path)];
+    strcpy(path_const, path);
 
+    if (strcmp(path, "/")==0){
+        splitted.components = calloc(1,sizeof(char*));
+        splitted.components[0] = "/";
+        return splitted;
+    }
+    
+    for (int k=0; k<strlen(path_const); k++){
+        if (path_const[k] == '/'){
             splitted.number++;
-            splitted.components = (char**)realloc(splitted.components, splitted.number*sizeof(char*));
-            splitted.components[splitted.number-1] = malloc(WORD_SIZE*sizeof(char));
-
-        } else {
-            splitted.components[splitted.number-1][j] = input_path[i];
-            i++;
-            j++;
         }
     }
+    
+    int i = 0;
+    char *p = strtok (path_const, "/");
+    splitted.components = calloc(splitted.number,sizeof(char*));
 
-    // If only one component, remove the / at the beginning
-    if (splitted.number == 1){
-        memmove(splitted.components[0], input_path+1, strlen(input_path));
+    while (p != NULL){
+        splitted.components[i] = malloc(WORD_SIZE*sizeof(char));
+        strcpy(splitted.components[i], p);
+        i++;
+        p = strtok(NULL, "/");
     }
 
     return splitted;   
+}
+
+int free_splitted(Splitted_path splitted){
+    for (int i=0; i<splitted.number; i++){
+        free(splitted.components[i]);
+    }
+    return 0;
 }
 
 // Extract only directory path from file path (e.g. /dir1/dir2/foo -> /dir1/dir2)
@@ -333,14 +334,16 @@ char * extract_dir_path(char * file_path){
         }
         i++;
     }
-    
+    printf("A: %d\n", last_slash);
+
     char * dir_path;
     if (last_slash == 0){
         dir_path = malloc(2*sizeof(char));
         strcpy(dir_path, "/");
     } else {
         dir_path = malloc(last_slash*sizeof(char));
-        memmove(dir_path, file_path, last_slash);
+        strncpy(dir_path, file_path, last_slash);
+        dir_path[last_slash] = '\0';
     }
 
     return dir_path;
@@ -350,8 +353,7 @@ char * extract_dir_path(char * file_path){
 // Return -1 if the directory doesn't exist
 unsigned long int find_directory(FileSystem fs, char *name, unsigned long int parent_id){
     for (int i=0; i<fs.sb.directory_number; i++){
-        Directory dir;
-        dir = fs.directory_array[i];
+        Directory dir = fs.directory_array[i];
 
         if (strncmp(dir.name, name, strlen(name)) == 0 && dir.parent_id == parent_id){
             return i;
@@ -370,7 +372,7 @@ long int find_dir_from_path(FileSystem fs, char * dir_path){
 
     for (int k=0; k<splitted.number; k++){
         unsigned long int dir_id = find_directory(fs, splitted.components[k], current_parent_id);
-    
+
         if (dir_id == -1){
             // Dir not found
             return -1;
@@ -379,7 +381,7 @@ long int find_dir_from_path(FileSystem fs, char * dir_path){
         }
     }
 
-    // TODO: free splitted
+    free_splitted(splitted);
     return current_parent_id;
 }
 
@@ -409,7 +411,7 @@ long int find_file(FileSystem fs, char * file_path){
     }
 
     // Free memory
-    free(splitted.components);
+    free_splitted(splitted);
     free(dir_path);    
     return return_value;
 }

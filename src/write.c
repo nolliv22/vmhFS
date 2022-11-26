@@ -10,7 +10,7 @@ int myFS_write(char * input_path, char * destination_path){
         printf("The file is greater than the maximum allowed size of the file system\n");
         return -1;
     }
-    
+
     // Check file size, if not ok, remove the oldest file
     // To store a new file we need to check if the number of bytes of the file plus the size of one inode can fit
 

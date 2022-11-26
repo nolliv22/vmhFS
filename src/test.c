@@ -11,18 +11,18 @@ int test(){
     fs = add_directory(fs, "dir1", 0);
     fs = add_directory(fs, "dir2", 1);
 
-    // Find dir from path
-    printf("Find dir from path:\n");
-    printf("%ld\n", find_dir_from_path(fs, "/dir1"));
-    printf("%ld\n", find_dir_from_path(fs, "/dir2"));
-    printf("%ld\n", find_dir_from_path(fs, "/dir1/dir2"));
+    // // Find dir from path
+    // printf("Find dir from path:\n");
+    // printf("%ld\n", find_dir_from_path(fs, "/dir1"));
+    // printf("%ld\n", find_dir_from_path(fs, "/dir2"));
+    // printf("%ld\n", find_dir_from_path(fs, "/dir1/dir2"));
 
-    // Find dir with name and parent_id
-    printf("Find dir:\n");
-    printf("%ld\n", find_directory(fs, "dir1", 0));
-    printf("%ld\n", find_directory(fs, "dir2", 0));
-    printf("%ld\n", find_directory(fs, "dir1", 1));
-    printf("%ld\n", find_directory(fs, "dir2", 1));
+    // // Find dir with name and parent_id
+    // printf("Find dir:\n");
+    // printf("%ld\n", find_directory(fs, "dir1", 0));
+    // printf("%ld\n", find_directory(fs, "dir2", 0));
+    // printf("%ld\n", find_directory(fs, "dir1", 1));
+    // printf("%ld\n", find_directory(fs, "dir2", 1));
 
     // FILE
     fs.sb.file_number = 0;

@@ -27,7 +27,7 @@ dd if=/dev/zero of=/tmp/6mb bs=1M count=6
 echo "Random string 123" > /tmp/foo.txt 
 
 # Write your own test here
-
+# $EXEC $FS test
 
 # PREDEFINED TESTS (please follow the order)
 
