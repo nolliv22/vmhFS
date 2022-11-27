@@ -48,14 +48,14 @@ int test(){
     fs = add_file(fs, foo2);
 
     printf("Find file:\n");
-    printf("%ld\n", find_file(fs, "/foo0"));
-    printf("%ld\n", find_file(fs, "/dir1/foo0"));
+    printf("%ld\n", find_file_from_path(fs, "/foo0"));
+    printf("%ld\n", find_file_from_path(fs, "/dir1/foo0"));
 
-    printf("%ld\n", find_file(fs, "/dir1/foo1"));
-    printf("%ld\n", find_file(fs, "/dir1/dir2/foo1"));
+    printf("%ld\n", find_file_from_path(fs, "/dir1/foo1"));
+    printf("%ld\n", find_file_from_path(fs, "/dir1/dir2/foo1"));
     
-    printf("%ld\n", find_file(fs, "/dir1/foo2"));
-    printf("%ld\n", find_file(fs, "/dir1/dir2/foo2"));
+    printf("%ld\n", find_file_from_path(fs, "/dir1/foo2"));
+    printf("%ld\n", find_file_from_path(fs, "/dir1/dir2/foo2"));
 
     free_FS(fs);
     return 0;

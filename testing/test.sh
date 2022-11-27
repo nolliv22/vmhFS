@@ -47,3 +47,23 @@ echo "Random string 123" > /tmp/foo.txt
 # $EXEC $FS write /tmp/foo.txt /dir1/dir2/foo.txt
 # $EXEC $FS ls
 # $EXEC $FS read /dir1/dir2/foo.txt
+
+# # 4) REMOVE: Remove file/directory
+# $EXEC $FS write /tmp/foo.txt /dir1/dir2/foo.txt
+# $EXEC $FS remove /foo.txt               # FAIL
+# $EXEC $FS remove /dir1                  # FAIL
+# $EXEC $FS remove /dir1/dir2             # FAIL
+
+# $EXEC $FS remove /dir1/dir2/foo.txt     # PASS
+# $EXEC $FS remove /dir1/dir2             # PASS
+# $EXEC $FS remove /dir1                  # PASS
+
+# !!! TODO: Fix directory !!! 
+$EXEC $FS write /tmp/foo.txt /dir1/foo.txt
+$EXEC $FS write /tmp/foo.txt /dir2/foo.txt
+
+$EXEC $FS remove /dir1/foo.txt
+$EXEC $FS remove /dir2/foo.txt
+
+$EXEC $FS remove /dir1
+$EXEC $FS ls            # ERROR: dir2 should still exist instead of dir1

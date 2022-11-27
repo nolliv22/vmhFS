@@ -1,19 +1,27 @@
 int myFS_write(char * input_path, char * destination_path){
     FileSystem fs = get_FS(PATH);
 
+    // Check if a file exists already at this path
+    long int file_id = find_file_from_path(fs, destination_path);
+    if (file_id != -1){
+        printf("There is already a file at the path %s\n", destination_path);
+        free_FS(fs);
+        return -1;
+    }
+    
     // Generate File struct from file
     fs = create_dir_from_path(fs, destination_path);
     File file = get_file(fs, input_path, destination_path);
-
+    
     // If the file size is greater than the file system max size
     if (file.inode.size > fs.sb.max_size){
         printf("The file is greater than the maximum allowed size of the file system\n");
+        free_FS(fs);
         return -1;
     }
-
+    
     // Check file size, if not ok, remove the oldest file
     // To store a new file we need to check if the number of bytes of the file plus the size of one inode can fit
-
     // If there is enought space without needing to remove old files
     if (fs.sb.current_size + file.inode.size + sizeof(Inode) <= fs.sb.max_size ){
         fs = add_file(fs, file);
@@ -46,14 +54,13 @@ int myFS_write(char * input_path, char * destination_path){
             fs = add_file(fs, file);
         }
     }
-
+    
     put_FS(PATH, fs);
 
     printf("-----------------------------------------------\n");
     printf("Write file %s to filesystem at %s:\n", input_path, destination_path);
     printf("-----------------------------------------------\n");
 
-    free(file.bytes);
     free_FS(fs);
     return 0;
 }

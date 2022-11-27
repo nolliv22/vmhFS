@@ -1,7 +1,7 @@
 int myFS_read(char * file_path){
     FileSystem fs = get_FS(PATH);
 
-    int file_id = find_file(fs, file_path);
+    int file_id = find_file_from_path(fs, file_path);
 
     if (file_id == -1){
         printf("File doesn't exist\n");

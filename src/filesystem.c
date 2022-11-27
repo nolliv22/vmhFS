@@ -28,6 +28,16 @@ typedef struct {                    // DIRECTORY
     unsigned long int parent_id;    // The id of the parent of this directory (CONVENTION: -1 if it's an empty directory)
 } Directory;
 
+typedef struct {
+    int file_ids[20];       // Array of file's ids
+    long int file_number;
+} Dir_files;
+
+typedef struct {        
+    int children_ids[20];         // Array of children id (Maximum 20 children)
+    int children_number;         
+} Dir_children;
+
 typedef struct {                    // SUPERBLOCK
     long int file_number;           // Number of file
     long int directory_number;      // Number of directory
@@ -62,7 +72,10 @@ char * extract_dir_path(char * file_path);
 unsigned long int find_directory(FileSystem fs, char *name, unsigned long int parent_id);
 long int find_dir_from_path(FileSystem fs, char * dir_path);
 
-long int find_file(FileSystem fs, char * file_path);
+long int find_file_from_path(FileSystem fs, char * file_path);
+
+Dir_children get_dir_children(FileSystem fs, unsigned long int id);
+Dir_files get_dir_files(FileSystem fs, long int dir_id);
 
 FileSystem add_directory(FileSystem fs, char * name, unsigned long int parent_id);
 FileSystem rm_directory(FileSystem fs, unsigned long int id);
@@ -169,7 +182,6 @@ void free_FS(FileSystem fs){
     free(fs.file_array);
 }
 
-
 FileSystem create_dir_from_path(FileSystem fs, char * destination_path){
     // Create all intermediate directories from a path
     
@@ -254,8 +266,13 @@ FileSystem add_file(FileSystem fs, File file){
     fs.sb.current_size += sizeof(Inode) + file.inode.size;
 
     // Update file_array
-    fs.file_array = (File*)realloc(fs.file_array, sizeof(File)*fs.sb.file_number);
-    fs.file_array[fs.sb.file_number-1] = file;
+    if (fs.sb.file_number == 1){
+        fs.file_array = malloc(1*sizeof(File));
+        fs.file_array[0] = file;
+    } else {
+        fs.file_array = (File*)realloc(fs.file_array, sizeof(File)*fs.sb.file_number);
+        fs.file_array[fs.sb.file_number-1] = file;
+    }
 
     return fs;
 }
@@ -270,8 +287,7 @@ FileSystem rm_file(FileSystem fs, int i){
     // Update file_array
     if (fs.sb.file_number == 0){
         // Re-initialize inode_array and bytes_array
-        free(fs.file_array);
-        fs.file_array = malloc(sizeof(File)*1);
+        fs.file_array = malloc(0*sizeof(File));
 
     } else {
         for (int k=i; k<fs.sb.file_number; k++){
@@ -334,7 +350,6 @@ char * extract_dir_path(char * file_path){
         }
         i++;
     }
-    printf("A: %d\n", last_slash);
 
     char * dir_path;
     if (last_slash == 0){
@@ -387,7 +402,7 @@ long int find_dir_from_path(FileSystem fs, char * dir_path){
 
 // Find a file using its path and return its index
 // Return -1 if the file doesn't exist
-long int find_file(FileSystem fs, char * file_path){
+long int find_file_from_path(FileSystem fs, char * file_path){
     // Default value set to -1 (Not found)
     int return_value = -1;
 
@@ -414,6 +429,33 @@ long int find_file(FileSystem fs, char * file_path){
     free_splitted(splitted);
     free(dir_path);    
     return return_value;
+}
+
+/*Returns a struct that contains the indeces of a directory's 
+children and their id knowing the index of the directory*/
+Dir_children get_dir_children(FileSystem fs, unsigned long int dir_id)
+{   Dir_children dc;
+    dc.children_number=0;
+    for (int i=0; i<fs.sb.directory_number;i++){ 
+        if (fs.directory_array[i].parent_id==dir_id){
+            dc.children_number++; 
+            dc.children_ids[dc.children_number-1]=i;
+        }
+    }
+    return dc; 
+}
+
+// Get all the file that belong to a directory
+Dir_files get_dir_files(FileSystem fs, long int dir_id){
+    Dir_files df;
+    df.file_number = 0;
+    for (int i=0; i<fs.sb.file_number;i++){
+        if (fs.file_array[i].inode.parent_id==dir_id){
+            df.file_number++; 
+            df.file_ids[df.file_number-1]=i;
+        }
+    }
+    return df;
 }
 
 // Store a new Directory (supposing it doesn't exist) in the directory_array
@@ -443,8 +485,8 @@ FileSystem add_directory(FileSystem fs, char * name, unsigned long int parent_id
 
 
 // Remove a directory (supposing it exists) knowing its index
-FileSystem rm_directory(FileSystem fs, unsigned long int id){
-    fs.directory_array[id].parent_id=-1;
+FileSystem rm_directory(FileSystem fs, unsigned long int dir_id){
+    fs.directory_array[dir_id].parent_id=-1;
     fs.sb.directory_number=fs.sb.directory_number-1;
     fs.sb.current_size=fs.sb.current_size-sizeof(Directory);
     return fs;
