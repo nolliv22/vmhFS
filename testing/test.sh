@@ -34,18 +34,18 @@ echo "Random string 123" > /tmp/foo.txt
 # # 1) WRITE: Overwrite old file
 # $EXEC $FS write /tmp/foo.txt /foo.txt
 # $EXEC $FS write /tmp/6mb /6mb1
-# $EXEC $FS ls
+# $EXEC $FS ls / -r
 # $EXEC $FS write /tmp/6mb /6mb2
-# $EXEC $FS ls
+# $EXEC $FS ls / -r
 
 # # 2) READ: print file content to stdout
 # $EXEC $FS write /tmp/foo.txt /foo.txt
-# $EXEC $FS ls
+# $EXEC $FS ls / -r
 # $EXEC $FS read /foo.txt
 
 # # 3) WRITE: Write file and create directories that don't exist
 # $EXEC $FS write /tmp/foo.txt /dir1/dir2/foo.txt
-# $EXEC $FS ls
+# $EXEC $FS ls / -r
 # $EXEC $FS read /dir1/dir2/foo.txt
 
 # # 4) REMOVE: Remove file/directory
@@ -57,16 +57,12 @@ echo "Random string 123" > /tmp/foo.txt
 # $EXEC $FS remove /dir1/dir2/foo.txt     # PASS
 # $EXEC $FS remove /dir1/dir2             # PASS
 # $EXEC $FS remove /dir1                  # PASS
-# $EXEC $FS ls
+# $EXEC $FS ls / -r
 
-# !!! TODO: Fix directory !!! 
-$EXEC $FS write /tmp/foo.txt /dir1/foo.txt
-$EXEC $FS write /tmp/foo.txt /dir2/foo.txt
-
-$EXEC $FS ls
-
-$EXEC $FS remove /dir1/foo.txt
-$EXEC $FS remove /dir2/foo.txt
-
-$EXEC $FS remove /dir1
-$EXEC $FS ls            # ERROR: dir2 should still exist instead of dir1
+# # 5) LS: recursive and not recursive
+# $EXEC $FS write /tmp/foo.txt /dir1/dir2/dir3/dir4/dir5/foo.txt
+# $EXEC $FS write /tmp/foo.txt /dir1/foo1.txt
+# $EXEC $FS write /tmp/foo.txt /dir1/foo2.txt
+# $EXEC $FS write /tmp/foo.txt /dir1/foo3.txt
+# $EXEC $FS ls /dir1
+# $EXEC $FS ls /dir1 -r

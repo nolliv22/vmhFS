@@ -81,6 +81,13 @@ Dir_files get_dir_files(FileSystem fs, long int dir_id);
 FileSystem add_directory(FileSystem fs, char * name, unsigned long int parent_id);
 FileSystem rm_directory(FileSystem fs, unsigned long int id);
 
+int num_of_files(FileSystem fs, long int id);
+long int size_dir_files(FileSystem fs, int dir_index);
+long int myFS_size_recur(FileSystem fs, int id);
+
+char* extract_size_unit(char * size_unit);
+long int convert_size(long int size3,char * size_unit);
+
 FileSystem get_FS(char * path){
     // Read a file system stored on the disk to the memory
     // INPUT: 
@@ -434,12 +441,12 @@ long int find_file_from_path(FileSystem fs, char * file_path){
 
 /*Returns a struct that contains the indeces of a directory's 
 children and their id knowing the index of the directory*/
-Dir_children get_dir_children(FileSystem fs, unsigned long int dir_id)
-{   Dir_children dc;
+Dir_children get_dir_children(FileSystem fs, unsigned long int dir_id){
+    Dir_children dc;
     dc.children_number=0;
 
     for (int i=0; i<fs.sb.directory_array_size;i++){ 
-        if (fs.directory_array[i].parent_id==dir_id){
+        if (fs.directory_array[i].parent_id == dir_id){
             dc.children_number++; 
             dc.children_ids[dc.children_number-1]=i;
         }
@@ -505,4 +512,96 @@ FileSystem rm_directory(FileSystem fs, unsigned long int dir_id){
     fs.sb.directory_array_size = fs.sb.directory_array_size; // !!! The array size does NOT change
     fs.sb.current_size=fs.sb.current_size-sizeof(Directory);
     return fs;
+}
+
+// returns the number of files in a directory
+int num_of_files(FileSystem fs, long int id)
+{   int num_files=0;
+    //printf("Total number of files in the file System:%ld\n",fs.sb.file_number);
+    for (int i=0;i<fs.sb.file_number;i++)
+       {
+            if (fs.file_array[i].inode.parent_id==id)
+            {
+                num_files++;
+            }
+        }
+    return num_files;
+}
+
+//returns the size of files imside a directory knowing its index
+long int size_dir_files(FileSystem fs, int dir_index)
+{   if (num_of_files(fs,dir_index)==0)
+{
+    return 0;
+}
+    long int size1=0;
+    for (int i=0;i<fs.sb.file_number;i++)
+       {
+            if (fs.file_array[i].inode.parent_id==dir_index)
+            {
+                size1=size1+fs.file_array[i].inode.size;
+            }
+        }
+    return size1;
+}
+
+
+
+//Here we implement the recursive version of size
+//Our base condition is to stop at the directory with no children 
+long int myFS_size_recur(FileSystem fs, int id){
+    Dir_children dc = get_dir_children(fs,id);
+
+    if (dc.children_ids == 0){  
+        return size_dir_files(fs,id);
+    } else {   
+        long int size2 = size_dir_files(fs,id);
+        for(int l=0; l<dc.children_number; l++){
+            size2 += myFS_size_recur(fs, dc.children_ids[l]);
+        }
+        //printf("%ld\n",size2);
+        return size2;
+    }
+}
+
+//Convert the size to the desired unit
+char* extract_size_unit(char * size_unit){ 
+   if (strncmp(size_unit,"-b",2)==0){
+       strcpy(size_unit,"B");        
+    }
+    else if (strncmp(size_unit,"-k",2)==0){
+       strcpy(size_unit,"KB");
+
+    } else if (strncmp(size_unit,"-m",2)==0){
+       strcpy(size_unit,"MB");
+
+    } else if (strncmp(size_unit,"-g",2)==0){
+       strcpy(size_unit,"GB");
+
+    }
+    return size_unit;
+}
+
+
+
+//Convert the size to the desired unit
+long int convert_size(long int size3,char * size_unit){
+    float number;
+    if (strncmp(size_unit,"-b",2)==0){
+        number=size3;
+
+    } else if (strncmp(size_unit,"-k",2)==0){
+        strcpy(size_unit,"KB");
+        number=(float)size3/(1e3);
+
+    } else if (strncmp(size_unit,"-m",2)==0){
+        strcpy(size_unit,"MB");
+        number=(float)size3/(1e6);
+
+    } else if (strncmp(size_unit,"-g",2)==0){
+        strcpy(size_unit,"GB");
+        number=(float)size3/(1e9);
+
+    }
+    return number;
 }
