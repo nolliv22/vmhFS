@@ -41,6 +41,7 @@ typedef struct {
 typedef struct {                    // SUPERBLOCK
     long int file_number;           // Number of file
     long int directory_number;      // Number of directory
+    long int directory_array_size;  // Size of the directory array (!!! != directory_number, it counts also empty Directory (parent_id = -1))        
     long int current_size;          // Size of the file system
     long int max_size;              // Maximum size of the file system
 } SuperBlock;
@@ -99,10 +100,10 @@ FileSystem get_FS(char * path){
     fread(&fs.sb, sizeof(SuperBlock), 1, fs_file);
 
     // Read directories
-    if (fs.sb.directory_number > 0){
-        fs.directory_array = malloc(sizeof(Directory)*fs.sb.directory_number);
+    if (fs.sb.directory_array_size > 0){
+        fs.directory_array = malloc(sizeof(Directory)*fs.sb.directory_array_size);
 
-        for (int i=0; i<fs.sb.directory_number; i++){
+        for (int i=0; i<fs.sb.directory_array_size; i++){
             Directory dir;
 
             // Read directory
@@ -151,8 +152,8 @@ int put_FS(char * path, FileSystem fs){
     fwrite(&fs.sb, sizeof(SuperBlock), 1, fs_file);
 
     // Write directories
-    if (fs.sb.directory_number > 0){
-        for (int i=0; i<fs.sb.directory_number; i++){
+    if (fs.sb.directory_array_size > 0){
+        for (int i=0; i<fs.sb.directory_array_size; i++){
             Directory dir = fs.directory_array[i];
 
             // Read directory
@@ -201,7 +202,7 @@ FileSystem create_dir_from_path(FileSystem fs, char * destination_path){
             if (dir_id == -1){
                 // If the directory doesn't exist, then create if
                 fs = add_directory(fs, dir_name, current_parent_id);
-                current_parent_id = fs.sb.directory_number-1;
+                current_parent_id = fs.sb.directory_array_size-1;
             } else {
                 // Else, the directory exists, then we go inside
                 current_parent_id = dir_id;
@@ -367,7 +368,7 @@ char * extract_dir_path(char * file_path){
 // Find a directory knowing its name and parent_in inside directory_array
 // Return -1 if the directory doesn't exist
 unsigned long int find_directory(FileSystem fs, char *name, unsigned long int parent_id){
-    for (int i=0; i<fs.sb.directory_number; i++){
+    for (int i=0; i<fs.sb.directory_array_size; i++){
         Directory dir = fs.directory_array[i];
 
         if (strncmp(dir.name, name, strlen(name)) == 0 && dir.parent_id == parent_id){
@@ -436,7 +437,8 @@ children and their id knowing the index of the directory*/
 Dir_children get_dir_children(FileSystem fs, unsigned long int dir_id)
 {   Dir_children dc;
     dc.children_number=0;
-    for (int i=0; i<fs.sb.directory_number;i++){ 
+
+    for (int i=0; i<fs.sb.directory_array_size;i++){ 
         if (fs.directory_array[i].parent_id==dir_id){
             dc.children_number++; 
             dc.children_ids[dc.children_number-1]=i;
@@ -471,7 +473,7 @@ FileSystem add_directory(FileSystem fs, char * name, unsigned long int parent_id
 
     // Find empty space to overwrite it
     long int empty_space = -1;
-    for(int i=0; i<fs.sb.directory_number; i++){
+    for(int i=0; i<fs.sb.directory_array_size; i++){
         if(fs.directory_array[i].parent_id == -1){
             empty_space = i;
         }
@@ -481,9 +483,11 @@ FileSystem add_directory(FileSystem fs, char * name, unsigned long int parent_id
     if (empty_space != -1){
         // If an empty space is found
         fs.directory_array[empty_space] = dir;
+        fs.sb.directory_array_size = fs.sb.directory_array_size; // !!! The array size does NOT change
     } else {
         // Else we extend the director_array
-        fs.directory_array = (Directory*)realloc(fs.directory_array, sizeof(Directory)*fs.sb.directory_number);
+        fs.sb.directory_array_size += 1; // !!! The array size CHANGES
+        fs.directory_array = (Directory*)realloc(fs.directory_array, sizeof(Directory)*fs.sb.directory_array_size);
         fs.directory_array[fs.sb.directory_number-1] = dir;
     }
 
@@ -493,8 +497,12 @@ FileSystem add_directory(FileSystem fs, char * name, unsigned long int parent_id
 
 // Remove a directory (supposing it exists) knowing its index
 FileSystem rm_directory(FileSystem fs, unsigned long int dir_id){
+    // Empty the cell
+    strcpy(fs.directory_array[dir_id].name, "TRASHED");
     fs.directory_array[dir_id].parent_id=-1;
-    fs.sb.directory_number=fs.sb.directory_number-1;
+
+    fs.sb.directory_number = fs.sb.directory_number-1;
+    fs.sb.directory_array_size = fs.sb.directory_array_size; // !!! The array size does NOT change
     fs.sb.current_size=fs.sb.current_size-sizeof(Directory);
     return fs;
 }

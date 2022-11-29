@@ -57,10 +57,13 @@ echo "Random string 123" > /tmp/foo.txt
 # $EXEC $FS remove /dir1/dir2/foo.txt     # PASS
 # $EXEC $FS remove /dir1/dir2             # PASS
 # $EXEC $FS remove /dir1                  # PASS
+# $EXEC $FS ls
 
 # !!! TODO: Fix directory !!! 
 $EXEC $FS write /tmp/foo.txt /dir1/foo.txt
 $EXEC $FS write /tmp/foo.txt /dir2/foo.txt
+
+$EXEC $FS ls
 
 $EXEC $FS remove /dir1/foo.txt
 $EXEC $FS remove /dir2/foo.txt

@@ -22,7 +22,7 @@ int myFS_ls(){
     }
 
     printf("DIRECTORIES\n");
-    for (int j=0; j<fs.sb.directory_number; j++){
+    for (int j=0; j<fs.sb.directory_array_size; j++){
         Directory dir = fs.directory_array[j];
         printf("Name: %s\n", dir.name);
         printf("Parent: %ld\n", dir.parent_id);
