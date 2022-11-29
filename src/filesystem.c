@@ -460,25 +460,32 @@ Dir_files get_dir_files(FileSystem fs, long int dir_id){
 
 // Store a new Directory (supposing it doesn't exist) in the directory_array
 FileSystem add_directory(FileSystem fs, char * name, unsigned long int parent_id){
-    // Find empty to overwrite
-    for(int i=0; i<fs.sb.directory_number; i++){
-        if(fs.directory_array[i].parent_id == -1){
-            Directory dir;
-            dir.parent_id = parent_id;
-            fs.directory_array[i] = dir;
-            return fs;
-        }
-    }
-
+    // Update superblock
     fs.sb.directory_number += 1;
-    fs.directory_array = (Directory*)realloc(fs.directory_array, sizeof(Directory)*fs.sb.directory_number);
+    fs.sb.current_size = fs.sb.current_size + sizeof(Directory);
 
+    // Create Directory struct
     Directory dir;
     strcpy(dir.name,name);
     dir.parent_id = parent_id;
 
-    fs.directory_array[fs.sb.directory_number-1] = dir;
-    fs.sb.current_size = fs.sb.current_size + sizeof(Directory);
+    // Find empty space to overwrite it
+    long int empty_space = -1;
+    for(int i=0; i<fs.sb.directory_number; i++){
+        if(fs.directory_array[i].parent_id == -1){
+            empty_space = i;
+        }
+    }
+
+    // Add the directory
+    if (empty_space != -1){
+        // If an empty space is found
+        fs.directory_array[empty_space] = dir;
+    } else {
+        // Else we extend the director_array
+        fs.directory_array = (Directory*)realloc(fs.directory_array, sizeof(Directory)*fs.sb.directory_number);
+        fs.directory_array[fs.sb.directory_number-1] = dir;
+    }
 
     return fs;
 }
