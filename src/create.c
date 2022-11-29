@@ -24,11 +24,10 @@ int myFS_create(int size){       // size in MB
     // fwrite(&fs.sb, sizeof(SuperBlock), 1, fs_file);
 
     printf("FileSystem created\n");
-    printf("-----------------------------------------------\n");
     printf("FileSystem size: %ld bytes\n", fs.sb.current_size);
     printf("FileSystem max size: %ld bytes\n", fs.sb.max_size);
     printf("Files: %ld\n", fs.sb.file_number);
-    printf("-----------------------------------------------\n");
+    printf("Directories: %ld\n", fs.sb.directory_number);
 
     // Free memory
     free_FS(fs);

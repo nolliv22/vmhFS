@@ -57,9 +57,7 @@ int myFS_write(char * input_path, char * destination_path){
     
     put_FS(PATH, fs);
 
-    printf("-----------------------------------------------\n");
     printf("Write file %s to filesystem at %s:\n", input_path, destination_path);
-    printf("-----------------------------------------------\n");
 
     free_FS(fs);
     return 0;

@@ -12,6 +12,7 @@ int myFS_ls(char * dir_path, bool r){
 
     int return_value;
 
+    printf("List segment:\n");
     printf("%s\n", fs.directory_array[dir_id].name);
     if (!r){
         return_value = ls_accumulator(fs, dir_id, 0, 0);

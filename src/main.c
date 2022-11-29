@@ -10,8 +10,6 @@
 #include "ls.c"
 #include "size.c"
 
-#include "test.c"
-
 // Export global variable to share across file system functions
 extern char * PATH;
 char * PATH;
@@ -25,7 +23,8 @@ void print_help(){
     "\tFILE\n"
     "\t\tPath to the file system (e.g. /tmp/myFS)\n"
     "\tCOMMAND\n"
-    "\t\tAvailable commands: create\n"
+    "\t\tAvailable commands: create, write, read, remove, ls and size\n"
+    "\t\tvhmFS FILE COMMAND to get help on the COMMAND\n"
     "\n"
     );
 }
@@ -45,7 +44,6 @@ int main(int argc, char * argv[]){
                 myFS_create(size);
             } else {
                 printf("Usage: vhmFS FILE create SIZE\n");
-                // TODO: Help for the command "create"
                 exit(0);
             }
         } 
@@ -57,7 +55,6 @@ int main(int argc, char * argv[]){
                 myFS_write(input_path, destination_path);
             } else {
                 printf("Usage: vhmFS FILE write INPUT_PATH DESTINATION_PATH\n");
-                // TODO: Help for the command "write"
                 exit(0);
             }
         }
@@ -68,7 +65,6 @@ int main(int argc, char * argv[]){
                 myFS_read(file_path);
             } else {
                 printf("Usage: vhmFS FILE read FILE_PATH\n");
-                // TODO: Help for the command "read"
                 exit(0);
             }
         }
@@ -79,7 +75,6 @@ int main(int argc, char * argv[]){
                 myFS_remove(path);
             } else {
                 printf( "Usage: vhmFS FILE remove [DIR_PATH or FILE_PATH]\n");
-                // TODO: Help for the command "remove"
                 exit(0);
             }
         }
@@ -94,45 +89,51 @@ int main(int argc, char * argv[]){
                 }
             } else { 
                 printf( "Usage: vhmFS FILE ls [OPTIONS] DIR_PATH\n"
-                        "\tOPTIONS:\n"
-                        "\t\t-r: recurse to all sub-directories\n"
-                        "\t\t-d: sort files by date\n"); 
+                        "OPTIONS:\n"
+                        "\t-r: recurse to all sub-directories\n"
+                        "\t-d: sort files by date\n"); 
                 exit(0);
             }
         }
 
         else if (strcmp("size", command) == 0){
-            if (argc <5 || argc>7){
-                printf( "Usage: vhmFS FILE size [OPTIONS] DIR_PATH\n"
-                        "\tOPTIONS:\n"
-                        "\t\t-r: recurse to all sub-directories\n"
-                        "\t\t-b/-k/-m/-g: display size in B/KB/MB/GB\n"
-                        "\t\t-stat: advanced information about current file system\n");
+            if (argc >= 5 && argc <= 7){
+                char * path = argv[3];
+                bool r;
+                bool unit =  false;
+                char * size_unit = malloc(2*sizeof(char));
+                bool stat;
+
+                for (int i=4; i<argc; i++){
+                    if (strcmp(argv[i], "-r")==0){
+                        r = true;
+                    } else if ( strcmp(argv[i], "-b")==0 || 
+                                strcmp(argv[i], "-k")==0 ||
+                                strcmp(argv[i], "-m")==0 ||
+                                strcmp(argv[i], "-g")==0){
+                        strcpy(size_unit, argv[i]);
+                        unit = true;
+                    } else if (strcmp(argv[i], "-stat")==0) {
+                        stat = true;
+                    }
+                }
+
+                if (unit == true){
+                    myFS_size(r, size_unit, stat, path);
+                } else {
+                    printf( "Missing PREFIX:\n"
+                            "-b/-k/-m/-g: display size in B/KB/MB/GB\n");
+                }
+                
+            } else {
+                printf( "Usage: vhmFS FILE size [PREFIX] [OPTIONS] DIR_PATH\n"
+                    "PREFIX:\n"
+                    "\t-b/-k/-m/-g: display size in B/KB/MB/GB\n"
+                    "OPTIONS:\n"
+                    "\t-r: recurse to all sub-directories\n"
+                    "\t-stat: advanced information about current file system\n");
                 // TODO: Help for the command "size"
                 exit(0);
-            } else if(argc==7)
-            {
-                myFS_size(true,argv[4],true,argv[6]);
-            } 
-            else if( argc==5)
-            {
-                myFS_size(false,argv[3],false,argv[4]);
-            } 
-            else if(argc==6)
-            {     if(strncmp(argv[3],"-r",2)==0)
-                    {
-                        myFS_size(true,argv[4],false,argv[5]);
-                    }
-                else
-                {
-                   myFS_size(false,argv[3],true,argv[5]); 
-                }
-            }
-        }
-
-        else if (strcmp("test", command) == 0){
-            if (argc == 3){
-                test();
             }
         }
 

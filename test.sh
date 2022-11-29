@@ -4,30 +4,30 @@ set -e
 # Go to current working directory
 cd "$PWD"
 
-# Intro
-echo "------------------"
-echo "vhmFS Unit Testing"
-echo "------------------"
-
-# Compile
-echo "Compiling..."
-make
-echo "------------------"
-
 # Variables
 EXEC="./build/vhmFS"
 FS="/tmp/tmpFS"
 
+# Unit testing
+echo "vhmFS Unit Testing"
+echo "------------------------------------"
+
+# Compile
+echo "Compiling..."
+make
+echo "Compilation successful"
+echo "------------------------------------"
+
 # Create a 10 MB file system
-echo "Create a 10 MB file system"
 $EXEC $FS create 10
+echo "------------------------------------"
 
 # Generating file
+echo "Generating file for testing..."
 dd if=/dev/zero of=/tmp/6mb bs=1M count=6
-echo "Random string 123" > /tmp/foo.txt 
+echo "Random string 123" > /tmp/foo.txt
+echo "------------------------------------"
 
-# Write your own test here
-# $EXEC $FS test
 
 # PREDEFINED TESTS (please follow the order)
 
@@ -66,3 +66,12 @@ echo "Random string 123" > /tmp/foo.txt
 # $EXEC $FS write /tmp/foo.txt /dir1/foo3.txt
 # $EXEC $FS ls /dir1
 # $EXEC $FS ls /dir1 -r
+
+# # 6) SIZE
+# $EXEC $FS write /tmp/foo.txt /dir1/foo1.txt
+# $EXEC $FS write /tmp/foo.txt /dir1/dir2/foo2.txt
+
+# $EXEC $FS write /tmp/6mb /dir2/6mb1
+
+# $EXEC $FS size /dir1 -b -r
+# $EXEC $FS size /dir2 -k -r
