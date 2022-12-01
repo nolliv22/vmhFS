@@ -12,7 +12,7 @@ dir:
 	@mkdir -p $(BUILDDIR)
 
 main: $(SRCDIR)/main.c
-	$(CC) $(FLAGS) -o $(BUILDDIR)/vhmFS $^
+	$(CC) $(FLAGS) -o $(BUILDDIR)/vmhFS $^
 	@echo "Build successfully"
 
 clean:

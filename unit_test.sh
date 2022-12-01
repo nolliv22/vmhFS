@@ -5,11 +5,11 @@ set -e
 cd "$PWD"
 
 # Variables
-EXEC="./build/vhmFS"
+EXEC="./build/vmhFS"
 FS="/tmp/tmpFS"
 
 # Unit testing
-echo "vhmFS Unit Testing"
+echo "vmhFS Unit Testing"
 echo "------------------------------------"
 
 # Compile
@@ -18,38 +18,33 @@ make
 echo "Compilation successful"
 echo "------------------------------------"
 
-# Create a 10 MB file system
+# 0) WRITE:Create a 10 MB file system
 $EXEC $FS create 10
 echo "------------------------------------"
 
 # Generating file
 echo "Generating file for testing..."
-dd if=/dev/zero of=/tmp/6mb bs=1M count=6
+dd if=/dev/zero of=/tmp/4mb bs=1M count=4
 echo "Random string 123" > /tmp/foo.txt
 echo "------------------------------------"
 
 
 # PREDEFINED TESTS (please follow the order)
+# Uncomment one test by one test
 
-# # 1) WRITE: Overwrite old file
-# $EXEC $FS write /tmp/foo.txt /foo.txt
-# $EXEC $FS write /tmp/6mb /6mb1
-# $EXEC $FS ls / -r
-# $EXEC $FS write /tmp/6mb /6mb2
+# # 1) WRITE: Write file and create directories that don't exist + Overwrite old file
+# $EXEC $FS write /tmp/4mb /dir1/dir2/4mb1
+# $EXEC $FS write /tmp/4mb /dir1/dir2/4mb2
+# $EXEC $FS write /tmp/4mb /dir1/dir2/4mb3
 # $EXEC $FS ls / -r
 
 # # 2) READ: print file content to stdout
-# $EXEC $FS write /tmp/foo.txt /foo.txt
-# $EXEC $FS ls / -r
-# $EXEC $FS read /foo.txt
-
-# # 3) WRITE: Write file and create directories that don't exist
 # $EXEC $FS write /tmp/foo.txt /dir1/dir2/foo.txt
-# $EXEC $FS ls / -r
 # $EXEC $FS read /dir1/dir2/foo.txt
 
-# # 4) REMOVE: Remove file/directory
+# # 3) REMOVE: Remove file/directory
 # $EXEC $FS write /tmp/foo.txt /dir1/dir2/foo.txt
+
 # $EXEC $FS remove /foo.txt               # FAIL
 # $EXEC $FS remove /dir1                  # FAIL
 # $EXEC $FS remove /dir1/dir2             # FAIL
@@ -59,7 +54,7 @@ echo "------------------------------------"
 # $EXEC $FS remove /dir1                  # PASS
 # $EXEC $FS ls / -r
 
-# # 5) LS: recursive and not recursive
+# # 4) LS: recursive and not recursive
 # $EXEC $FS write /tmp/foo.txt /dir1/dir2/dir3/dir4/dir5/foo.txt
 # $EXEC $FS write /tmp/foo.txt /dir1/foo1.txt
 # $EXEC $FS write /tmp/foo.txt /dir1/foo2.txt
@@ -67,11 +62,11 @@ echo "------------------------------------"
 # $EXEC $FS ls /dir1
 # $EXEC $FS ls /dir1 -r
 
-# # 6) SIZE
+# # 5) SIZE
 # $EXEC $FS write /tmp/foo.txt /dir1/foo1.txt
-# $EXEC $FS write /tmp/foo.txt /dir1/dir2/foo2.txt
-
-# $EXEC $FS write /tmp/6mb /dir2/6mb1
+# $EXEC $FS write /tmp/4mb /dir2/4mb1
 
 # $EXEC $FS size /dir1 -b -r
 # $EXEC $FS size /dir2 -k -r
+
+# $EXEC $FS size / -b -stat

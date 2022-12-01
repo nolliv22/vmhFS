@@ -16,15 +16,15 @@ char * PATH;
 
 void print_help(){
     printf(
-    "\e[1m""vhmFS""\e[0m" " - a simple file system named after: Villon, Hamza and Moaad\n"
-    "Usage: vhmFS FILE COMMAND\n"
+    "\e[1m""vmhFS""\e[0m" " - a simple file system named after: Villon, Hamza and Moaad\n"
+    "Usage: vmhFS FILE COMMAND\n"
     "\n"
     "\e[1m""OPTIONS:\n""\e[0m"
     "\tFILE\n"
     "\t\tPath to the file system (e.g. /tmp/myFS)\n"
     "\tCOMMAND\n"
     "\t\tAvailable commands: create, write, read, remove, ls and size\n"
-    "\t\tvhmFS FILE COMMAND to get help on the COMMAND\n"
+    "\t\tvmhFS FILE COMMAND to get help about the COMMAND\n"
     "\n"
     );
 }
@@ -41,9 +41,9 @@ int main(int argc, char * argv[]){
         if (strcmp("create", command) == 0){
             if (argc == 4){
                 int size = atoi(argv[3]);
-                myFS_create(size);
+                return myFS_create(size);
             } else {
-                printf("Usage: vhmFS FILE create SIZE\n");
+                printf("Usage: vmhFS FILE create SIZE\n");
                 exit(0);
             }
         } 
@@ -52,9 +52,9 @@ int main(int argc, char * argv[]){
             if (argc == 5){
                 char * input_path = argv[3];
                 char * destination_path = argv[4];
-                myFS_write(input_path, destination_path);
+                return myFS_write(input_path, destination_path);
             } else {
-                printf("Usage: vhmFS FILE write INPUT_PATH DESTINATION_PATH\n");
+                printf("Usage: vmhFS FILE write INPUT_PATH DESTINATION_PATH\n");
                 exit(0);
             }
         }
@@ -62,9 +62,9 @@ int main(int argc, char * argv[]){
         else if (strcmp("read", command) == 0){
             if (argc == 4){
                 char * file_path = argv[3];
-                myFS_read(file_path);
+                return myFS_read(file_path);
             } else {
-                printf("Usage: vhmFS FILE read FILE_PATH\n");
+                printf("Usage: vmhFS FILE read FILE_PATH\n");
                 exit(0);
             }
         }
@@ -72,23 +72,29 @@ int main(int argc, char * argv[]){
         else if (strcmp("remove", command) == 0){
             if (argc == 4){
                 char * path = argv[3];
-                myFS_remove(path);
+                return myFS_remove(path);
             } else {
-                printf( "Usage: vhmFS FILE remove [DIR_PATH or FILE_PATH]\n");
+                printf( "Usage: vmhFS FILE remove [DIR_PATH or FILE_PATH]\n");
                 exit(0);
             }
         }
 
         else if (strcmp("ls", command) == 0){
-            if (argc == 4){
-                myFS_ls(argv[3], false);
-            } else if (argc == 5){
-                char * flag = argv[4];
-                if (strcmp(flag, "-r") == 0){
-                    myFS_ls(argv[3], true);
+            if (argc >= 4){
+                char * dir_path = argv[3];
+                bool r;
+            
+                if (argc == 5){
+                    char * flag = argv[4];
+                    if (strcmp(flag, "-r") == 0){
+                        r = true;    
+                    }
                 }
+
+                return myFS_ls(dir_path, r);
+
             } else { 
-                printf( "Usage: vhmFS FILE ls [OPTIONS] DIR_PATH\n"
+                printf( "Usage: vmhFS FILE ls [OPTIONS] DIR_PATH\n"
                         "OPTIONS:\n"
                         "\t-r: recurse to all sub-directories\n"
                         "\t-d: sort files by date\n"); 
@@ -119,20 +125,19 @@ int main(int argc, char * argv[]){
                 }
 
                 if (unit == true){
-                    myFS_size(r, size_unit, stat, path);
+                    return myFS_size(r, size_unit, stat, path);
                 } else {
                     printf( "Missing PREFIX:\n"
                             "-b/-k/-m/-g: display size in B/KB/MB/GB\n");
                 }
                 
             } else {
-                printf( "Usage: vhmFS FILE size [PREFIX] [OPTIONS] DIR_PATH\n"
+                printf( "Usage: vmhFS FILE size [PREFIX] [OPTIONS] DIR_PATH\n"
                     "PREFIX:\n"
                     "\t-b/-k/-m/-g: display size in B/KB/MB/GB\n"
                     "OPTIONS:\n"
                     "\t-r: recurse to all sub-directories\n"
                     "\t-stat: advanced information about current file system\n");
-                // TODO: Help for the command "size"
                 exit(0);
             }
         }

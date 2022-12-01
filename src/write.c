@@ -14,8 +14,8 @@ int myFS_write(char * input_path, char * destination_path){
     File file = get_file(fs, input_path, destination_path);
     
     // If the file size is greater than the file system max size
-    if (file.inode.size > fs.sb.max_size){
-        printf("The file is greater than the maximum allowed size of the file system\n");
+    if (file.inode.size > fs.sb.max_size/2){
+        printf("The file is greater than the maximum allowed size (%.2f MB)\n", fs.sb.max_size/1e6/2);
         free_FS(fs);
         return -1;
     }
@@ -55,10 +55,14 @@ int myFS_write(char * input_path, char * destination_path){
         }
     }
     
-    put_FS(PATH, fs);
+    if (put_FS(PATH, fs) != 0){
+        printf("Store file system failed\n");
+        printf("Exiting...\n");
+        exit(-1);}
 
-    printf("Write file %s to filesystem at %s:\n", input_path, destination_path);
+    printf("Write file %s to filesystem at: %s\n", input_path, destination_path);
 
+    // Free memory
     free_FS(fs);
     return 0;
 }
