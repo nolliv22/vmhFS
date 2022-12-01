@@ -32,11 +32,11 @@ echo "------------------------------------"
 # PREDEFINED TESTS (please follow the order)
 # Uncomment one test by one test
 
-# 1) WRITE: Write file and create directories that don't exist + Overwrite old file
-$EXEC $FS write /tmp/4mb /dir1/dir2/4mb1
-$EXEC $FS write /tmp/4mb /dir1/dir2/4mb2
-$EXEC $FS write /tmp/4mb /dir1/dir2/4mb3
-$EXEC $FS ls / -r
+# # 1) WRITE: Write file and create directories that don't exist + Overwrite old file
+# $EXEC $FS write /tmp/4mb /dir1/dir2/4mb1
+# $EXEC $FS write /tmp/4mb /dir1/dir2/4mb2
+# $EXEC $FS write /tmp/4mb /dir1/dir2/4mb3
+# $EXEC $FS ls / -r
 
 # # 2) READ: print file content to stdout
 # $EXEC $FS write /tmp/foo.txt /dir1/dir2/foo.txt
