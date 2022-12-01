@@ -32,27 +32,24 @@ echo "------------------------------------"
 # PREDEFINED TESTS (please follow the order)
 # Uncomment one test by one test
 
-# # 1) WRITE: Write file and create directories that don't exist + Overwrite old file
-# $EXEC $FS write /tmp/4mb /dir1/dir2/4mb1
-# $EXEC $FS write /tmp/4mb /dir1/dir2/4mb2
-# $EXEC $FS write /tmp/4mb /dir1/dir2/4mb3
-# $EXEC $FS ls / -r
+# 1) WRITE: Write file and create directories that don't exist + Overwrite old file
+$EXEC $FS write /tmp/4mb /dir1/dir2/4mb1
+$EXEC $FS write /tmp/4mb /dir1/dir2/4mb2
+$EXEC $FS write /tmp/4mb /dir1/dir2/4mb3
+$EXEC $FS ls / -r
 
 # # 2) READ: print file content to stdout
 # $EXEC $FS write /tmp/foo.txt /dir1/dir2/foo.txt
 # $EXEC $FS read /dir1/dir2/foo.txt
+# $EXEC $FS read /dir1/dir2/foo2.txt
 
 # # 3) REMOVE: Remove file/directory
 # $EXEC $FS write /tmp/foo.txt /dir1/dir2/foo.txt
-
-# $EXEC $FS remove /foo.txt               # FAIL
-# $EXEC $FS remove /dir1                  # FAIL
-# $EXEC $FS remove /dir1/dir2             # FAIL
-
 # $EXEC $FS remove /dir1/dir2/foo.txt     # PASS
 # $EXEC $FS remove /dir1/dir2             # PASS
 # $EXEC $FS remove /dir1                  # PASS
 # $EXEC $FS ls / -r
+# $EXEC $FS remove /
 
 # # 4) LS: recursive and not recursive
 # $EXEC $FS write /tmp/foo.txt /dir1/dir2/dir3/dir4/dir5/foo.txt
@@ -65,8 +62,6 @@ echo "------------------------------------"
 # # 5) SIZE
 # $EXEC $FS write /tmp/foo.txt /dir1/foo1.txt
 # $EXEC $FS write /tmp/4mb /dir2/4mb1
-
 # $EXEC $FS size /dir1 -b -r
 # $EXEC $FS size /dir2 -k -r
-
 # $EXEC $FS size / -b -stat

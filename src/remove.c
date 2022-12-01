@@ -16,6 +16,10 @@ int myFS_remove(char * path){
         return_value = 0;
 
     // Else if it's a directory path
+    } else if (dir_id == 0){
+        printf("Root directory cannot be removed\n");
+        return_value = -1;
+        
     } else if (dir_id != -1){
         Dir_files df = get_dir_files(fs, dir_id);
         Dir_children dc = get_dir_children(fs, dir_id);
@@ -27,7 +31,7 @@ int myFS_remove(char * path){
 
         // Else it's empty
         } else {
-            // Remove the file
+            // Remove the directory
             fs = rm_directory(fs, dir_id);
             printf("Directory %s has been remove from the file system\n", path);
             return_value = 0;

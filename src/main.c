@@ -82,7 +82,7 @@ int main(int argc, char * argv[]){
         else if (strcmp("ls", command) == 0){
             if (argc >= 4){
                 char * dir_path = argv[3];
-                bool r;
+                bool r = false;
             
                 if (argc == 5){
                     char * flag = argv[4];

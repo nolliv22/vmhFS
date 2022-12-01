@@ -27,9 +27,7 @@ int myFS_write(char * input_path, char * destination_path){
         fs = add_file(fs, file);
     // Need to remove old files to add the new file
     } else {
-        if (fs.sb.file_number == 0){
-            fs = add_file(fs, file);
-        } else if (fs.sb.file_number == 1){
+        if (fs.sb.file_number == 1){
             fs = rm_file(fs, 0);
             fs = add_file(fs, file);
         } else {
