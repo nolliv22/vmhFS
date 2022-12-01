@@ -1,0 +1,10 @@
+\chapter{Introduction}
+\label{cp:introduction}
+Usually, when a file system is full, the user gets a "no space left on device" error message: it is not possible to add a new file or extend a file.\\
+
+The objective of the project is to program a new file system that can handle a "no space left on device" error: this new file system we are going to implement assumes that, when the file system is full, the file system deletes the oldest files until it can store the new file.\\
+
+The file system to program is simply an array of data stored as a regular file on the computer. The implementation of files, directories, inodes... and the intuition behind it are going to be discussed thoroughly in the first section.
+
+Six main functions has been implemented in the file system (create, write, read, remove, ls, size) with the objective of reserving as much space as possible for file data. The structure of each one of these functions will be explained in the following sections.
+\newpage

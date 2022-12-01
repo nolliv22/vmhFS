@@ -1,0 +1,5 @@
+\chapter{Conclusion}
+\label{cp:conclusion}
+
+All the VMH File system commands work as expected and fulfill the initial requirements. The queue structure of the file system simplified the implementation of the other functions. Furthermore, the advantage of working on the RAM is that we make one load and one save instead of repeating this process multiple times for each micro-modification if we were to have a static structure on the disk.
+But this approach will only work for very small file systems as mentioned before. To counter this problem, a possible solution is to segment the file system and load to the RAM segment by segment.

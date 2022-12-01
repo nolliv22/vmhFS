@@ -1,0 +1,46 @@
+\section{The size command}
+
+\subsection{How it works}
+\textcolor{blue}{\textbf{size}}: computes the size of files inside a given directory. If the -r flag is indicated, size should recursively calculate the size of files inside that directory. \\
+
+This function takes as an argument the directory path. We use the function \textit{find\_dir\_from\_path} to check if the path is correct, if not it returns -1. If the path exists indeed, it returns the directory index in the directory file.\\
+
+We also use the function \textit{size\_dir\_files} that calculates the size of files inside a single directory with a simple for loop over the file array.\\
+
+For the recursive part, we use the function \textit{size\_accumulator} that takes in argument an index of a given directory. The base condition of this recursive function is to stop at a directory that doesn't have any children directories. We compute the indices of a given directory by using the function \textit{get\_dir\_children} that uses another simple for loop over the directory array. Its algorithm is very similar to the one used in the recursive ls.\\
+
+\newpage
+\subsection{Testing}
+\lstset{language=bash,caption={Size command},label=code:size-command}
+\begin{lstlisting}
+$ vmhFS /tmp/tmpFS write /tmp/foo.txt /dir1/foo1.txt
+$ vmhFS /tmp/tmpFS write /tmp/4mb /dir2/4mb1
+$ vmhFS /tmp/tmpFS size /dir1 -b -r
+$ vmhFS /tmp/tmpFS size /dir2 -k -r
+$ vmhFS /tmp/tmpFS size / -b -stat
+\end{lstlisting}
+
+\lstset{language=bash,caption={Command output},label=code:command-output}
+\begin{lstlisting}
+Write file /tmp/4mb to filesystem at: /dir1/dir2/4mb1
+Write file /tmp/4mb to filesystem at: /dir1/dir2/4mb2
+Write file /tmp/4mb to filesystem at: /dir1/dir2/4mb3
+List segment:
+/
+L__dir1
+    L__dir2
+        L__4mb2 [4194304 B]
+        L__4mb3 [4194304 B]
+Write file /tmp/foo.txt to filesystem at: /dir1/foo1.txt
+Write file /tmp/4mb to filesystem at: /dir2/4mb1
+Total size of files in /dir1: 18 B [Recursive]
+Total size of files in /dir2: 4194 KB [Recursive]
+Current size of the file system 12583532
+Total size of the files: 4194322
+Ratio Total files/Total filesystem: 0.33332
+Total size of files in /: 0 B [Not recursive]
+\end{lstlisting}
+
+\newpage
+
+

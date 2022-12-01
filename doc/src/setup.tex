@@ -1,0 +1,230 @@
+% !TEX root = main.tex
+% openany means no blank pages before chapters
+% oneside means no different offset for odd and even pages
+% If oneside is use, openany becomes useless.
+\documentclass[oneside,12pt,a4paper]{report}
+
+%% This makes the document duplex (suitable for double-sided printing).
+%  Comment out bindingoffset=1cm if print on single sided pages. (however this has unintended effect on book class)
+
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm,bindingoffset=1cm]{geometry}
+
+%% Some self-explanatory packages
+\usepackage[backref=true, style=alphabetic, backend=biber, url=false, doi=true, isbn=false]{biblatex}
+\addbibresource{library.bib}
+
+% Make the references' font size smaller
+%\renewcommand*{\bibfont}{\footnotesize}
+\DefineBibliographyStrings{english}{%
+  backrefpage = {cited on page},
+  backrefpages = {cited on pages},
+}
+
+\usepackage{comment}
+\usepackage{datetime}
+\usepackage[font=small,labelfont=bf,justification=centering]{caption}
+\usepackage{subcaption}
+\usepackage[pdftex,
+            hidelinks,
+            pdfencoding=auto,
+            pdfauthor={Yukio Fukuzawa},
+            pdftitle={Computational Methods for Birdsong Analysis}
+           ]{hyperref}
+\usepackage{lipsum}
+\usepackage{todonotes}
+\usepackage{setspace}
+\usepackage[bottom]{footmisc}
+\usepackage[ampersand]{easylist}
+\usepackage{amsmath}
+\usepackage{nth}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{pdfpages}
+\usepackage{fancyhdr}
+%\usepackage{pdfpages}
+\usepackage{xparse}
+\usepackage{afterpage}
+\usepackage{mathtools}
+\usepackage{forest}
+\usepackage{booktabs}  % publication-quality tables
+\usepackage{eqparbox}  % sub-align table cells
+\usepackage[referable]{threeparttablex}
+\usepackage{makecell}
+\usepackage{lipsum}
+\usepackage{wrapfig}
+
+\usepackage[safe]{tipa}
+
+% To add picture background to a page
+\usepackage{eso-pic}
+
+% More control over list items
+\usepackage{enumitem}
+
+%% Font typeface
+% This typeface looks better
+\usepackage{Alegreya}
+% Great math font that goes with Alegreya (Asana Math is better if Xelatex or Lualatex is used)
+\usepackage{euler}
+
+% This will scramble the text wrapped in \randomize so that it cannot be copied and pasted. Use this to obfuscate email address and other sensitive data.
+\usepackage{randtext}
+
+%% For the figures
+% Gantt diagrams for the schedule
+\usepackage{pgfgantt}
+\usepackage{tikz,xcolor}
+\usepackage{graphicx}
+\graphicspath{{./figures/}}
+
+\usepackage{pgfplots}
+% Need this to properly scale the tikz pictures to pagewidth
+\usepackage{tikzscale}
+% To make Overleaf happy
+\pgfplotsset{compat=newest}
+% Utilities of the tikz packages
+\usetikzlibrary{shapes,arrows,calc,mindmap,shadows,external,positioning,shapes.geometric,arrows.meta}
+\usepackage[crop=pdfcrop,cleanup={.tex,.dvi,.ps,.pdf,.log,.bbl,.run.xml,.bcf}]{pstool}
+
+%% This is required for the background image
+\usepackage{eso-pic}
+
+% This is needed because XeLatex has no md5 to check for figure update - it will fallback to plain and simple diff anyway. So this is basically to suppress the warning
+\usetikzlibrary{external}
+\tikzset{external/up to date check=diff}
+
+%% Enable externalisation of the Tikz figures (They will be rendered and saved as PDF for reuse, instead of recompiling each time)
+\tikzexternalize
+
+% To rotate a figure landscape and insert it in a portrait page  creating a mess
+\newsavebox{\tempbox}
+
+% Suppress the default suffix given to pdf file generated from eps (e.g. if blah.eps is the source then the default generated pdf will be blah-eps-converted-to.pdf)
+\usepackage{epstopdf}
+\epstopdfsetup{suffix=}
+
+% This will remove the chapter number from section numberings
+\renewcommand*\thesection{\arabic{section}}
+
+% This will romanize chapter numbering (e.g. Chapter I instead of Chapter 1)
+\renewcommand{\thechapter}{\Roman{chapter}}
+
+% make the chapter title compact
+%\usepackage[Glenn]{fncychap}
+\usepackage{titlesec, blindtext}
+\titleformat{\chapter}[hang]{\LARGE\bfseries}{\thechapter\hspace{20pt}}{0pt}{\LARGE\bfseries}
+
+% This disallows figure numbering to reset after each chapter, so the numbering is continuous throughout the whole document.
+\usepackage{chngcntr}
+\counterwithout{figure}{chapter}
+
+% For fleuron/dingbats
+\usepackage{fourier-orns}
+
+\definecolor{TextColor}{HTML}{000000}
+\definecolor{SideColorDark}{HTML}{000000}
+\definecolor{MainColor}{HTML}{0000FF}
+\definecolor{OppositeColor}{HTML}{FF0000}
+\definecolor{HighlightColor}{HTML}{FFFF00}
+\color{TextColor}
+
+
+%% Colour links & citations
+\hypersetup{%
+  colorlinks=true,
+  linkcolor=OppositeColor,
+  citecolor=MainColor
+}
+
+\makeatletter
+\renewcommand*{\p@section}{\S\thechapter-}
+\renewcommand*{\p@subsection}{\S\thechapter-\,}
+\renewcommand*{\p@subsubsection}{\S\thechapter-}
+\renewcommand*{\p@paragraph}{\S\thechapter-}
+\makeatother
+
+%% Fancy quote
+\usepackage[strict]{changepage}
+\usepackage{framed}
+
+\newenvironment{fancyquote}{%
+  \def\FrameCommand{%
+    \hspace{1pt}%
+    {\color{black}\vrule width 2pt}%
+    \colorbox{gray!20}%
+  }%
+  \MakeFramed{\advance\hsize-\width\FrameRestore}%
+  \noindent% disable indenting first paragraph
+  \begin{adjustwidth}{}{7pt}%
+    \vspace{2pt}\vspace{2pt}%
+  }
+  {%
+    \vspace{2pt}\end{adjustwidth}\endMakeFramed%
+}
+
+\usepackage{scrextend}
+
+\newcommand{\fncydesc}[2]{
+  \begin{fancyquote}
+    \begin{labeling}{#1}
+      \item[\bfseries\itshape{#1}]\itshape{#2}
+    \end{labeling}
+  \end{fancyquote}
+}
+
+\newcommand{\tudu}[2][]{
+  \tikzexternaldisable
+    \todo[color=HighlightColor,inline, size=\small,#1]{#2}
+  \tikzexternalenable
+}
+
+\newcommand{\misfig}[2][]{
+  \tikzexternaldisable
+  \missingfigure[figcolor=HighlightColor,figwidth=\textwidth,#1]{#2}
+  \tikzexternalenable
+}
+
+%% Code block style
+%  Load the \ttfamily font
+\usepackage[T1]{fontenc}
+\usepackage[scaled]{beramono}
+
+%  Format code blocks
+\usepackage{listings}
+%  Change caption name
+\renewcommand*{\lstlistingname}{Code block}
+\captionsetup[lstlisting]{margin=0cm,format=hang,font=small,format=plain,labelfont={bf,up},textfont={it}}
+%  Style
+\lstset{
+  showstringspaces=false,
+  formfeed=\newpage,
+  commentstyle=\itshape,
+  backgroundcolor=\color{gray!5},
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  captionpos=b,                    % sets the caption-position to bottom
+  commentstyle=\color{gray},    % comment style
+  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+  keepspaces=true,
+  numbersep=2mm,                   % how far the line-numbers are from the code
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  stepnumber=1, numberfirstline=false,
+  basicstyle=\linespread{1}\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{MainColor},
+  stringstyle=\itshape\color{OppositeColor},
+  numberstyle=\footnotesize\ttfamily\color{gray},
+  numbers=left,xleftmargin=4mm,framexleftmargin=0mm,xrightmargin=0mm,
+  frame=top,frame=bottom,
+}
+
+%% Change title style (currently change only color)
+\titleformat{\chapter}
+{\normalfont\LARGE\bfseries\color{SideColorDark}}{\thechapter}{1em}{}
+
+\titleformat{\section}
+{\normalfont\Large\bfseries\color{SideColorDark}}{\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{SideColorDark}}{\thesubsection}{1em}{}

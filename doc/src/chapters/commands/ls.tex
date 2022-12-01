@@ -1,0 +1,54 @@
+\section{The ls command}
+
+\subsection{How it works}
+\textbf{\textcolor{blue}{ls}}: takes as an input the directory path and two flags: -r for the recursive version and -d to sort the files by date. (By construction of the file system, they're always sorted.)\\
+
+\begin{itemize}
+\item \textit {ls\_accumulator(FileSystem fs, long int dir\_id, int level, int max\_level)}: this function is recursive, it takes the directory id as an input, it uses the \textit{get\_dir\_children(fs,id)} function to get all the children directories of the given directory and stores them in a \textit{dir\_children} structure, if the children number of this directory is greater than zero this means that its not empty and has children directories, in this case we will print the name of the directory children and recursively print all the files found in these directories. 
+The base condition for this recursive function is \textit{dir\_children.number}==0 i.e to stop when a given directory doesn't n’t have any children directories.\\
+
+\item \textit{Dir\_files get\_dir\_files(FileSystem fs, long int dir\_id)}: this function takes as an input the directory id and find all the files found in this directory.
+
+The ls function always checks whether the path provided is correct or not. If the recursive flag hasn’t been indicated, it will print the all files inside the desired directory. \\
+
+On the other hand if the recursive flag is present, the ls function prints the files inside the given directory and recursively prints all files  contained in its children directories schemed in a tree representation. \\
+\end{itemize}
+
+\newpage
+\subsection{Testing}
+\lstset{language=bash,caption={ls command},label=code:ls-command}
+\begin{lstlisting}
+$ vmhFS /tmp/tmpFS create 10
+$ vmhFS /tmp/tmpFS write /tmp/foo.txt /dir1/dir2/dir3/dir4/dir5/foo.txt
+$ vmhFS /tmp/tmpFS write /tmp/foo.txt /dir1/foo1.txt
+$ vmhFS /tmp/tmpFS write /tmp/foo.txt /dir1/foo2.txt
+$ vmhFS /tmp/tmpFS write /tmp/foo.txt /dir1/foo3.txt
+$ vmhFS /tmp/tmpFS ls /dir1
+$ vmhFS /tmp/tmpFS ls /dir1 -r
+\end{lstlisting}
+
+\lstset{language=bash,caption={Command output},label=code:command-output}
+\begin{lstlisting}
+Write file /tmp/foo.txt to filesystem at: /dir1/dir2/dir3/dir4/dir5/foo.txt
+Write file /tmp/foo.txt to filesystem at: /dir1/foo1.txt
+Write file /tmp/foo.txt to filesystem at: /dir1/foo2.txt
+Write file /tmp/foo.txt to filesystem at: /dir1/foo3.txt
+List segment:
+dir1
+L__foo1.txt [18 B]
+L__foo2.txt [18 B]
+L__foo3.txt [18 B]
+L__dir2
+List segment:
+dir1
+L__foo1.txt [18 B]
+L__foo2.txt [18 B]
+L__foo3.txt [18 B]
+L__dir2
+    L__dir3
+        L__dir4
+            L__dir5
+                L__foo.txt [18 B]
+\end{lstlisting}
+
+\newpage

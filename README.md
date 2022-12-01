@@ -78,3 +78,8 @@ List segment:
         └──4mb2 [4194304 B]
         └──4mb3 [4194304 B]
 ```
+
+---
+
+## See also
+For more information: [Project report](./doc/report.pdf)
