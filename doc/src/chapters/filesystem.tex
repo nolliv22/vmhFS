@@ -1,0 +1,112 @@
+\chapter{File system structure}
+\label{cp:file system structure}
+As we explained in the introduction, the main characteristic of this file system is the FIFO principle (first in first out) in writing files. So instead of using standard static data blocks, why not use a dynamic queue (FIFO) container which will model perfectly our file system. The cherry on top is that the files in our file system will be always sorted by date (the oldest element is always going to be the first element in the array).\\
+
+In this manner, each time we want to modify the file system we have to put on the RAM, make the necessary modifications and then save it back to the disk. In our case, the size of the file system is just 10 MB, so its not going to affect the RAM. With larger file Systems this approach is obsolete.\\
+
+To do so, we first use a function \textit{get\_FS} that reads a file system stored on the disk to the memory. After the necessary changes are made to the file system, we use the function \textit{put\_FS} that rewrites the file system back into the disk.\\
+
+\begin{table}[hbt!]
+    \centering
+    \begin{tabular}{|c|}
+        \hline
+        \textbf{FILESYSTEM} \\
+        \hline
+        \textbf{SuperBlock sb} \\
+        \hline
+        \textbf{File * file\_array} \\
+        \hline
+        \textbf{Directory * directory\_array} \\
+        \hline
+    \end{tabular}
+    \caption{FileSystem structure}
+    \label{tab:my_label}
+\end{table}
+
+\newpage
+In order to facilitate the manipulation of the objects that we are going to use in the file system we chose for our file system to be a \textit{struct} that contains a \textbf{superblock}, a \textbf{directory array} and a \textbf{file array}:
+
+\begin{itemize}
+    \item \textbf{The SuperBlock}: which is in itself a \textit{struct} that contains some useful information about the file system(number of files, number of directories, size of the directory array, the current size of the file system, and the maximum size of the file system which is in our case 10 MB).\\
+
+    \begin{table}[hbt!]
+        \centering
+        \begin{tabular}{|c|}
+            \hline
+            \textbf{SUPERBLOCK} \\
+            \hline
+            \textit{long int} file\_number \\
+            \textit{long int} directory\_number \\
+            \textit{long int} directory\_array\_size \\
+            \textit{long int} current\_size \\
+            \textit{long int} max\_size \\
+            \hline
+        \end{tabular}
+        \caption{SuperBlock structure}
+        \label{tab:my_label}
+    \end{table}
+    
+    \item \textbf{The directory array}: which is an array of structs.
+    The directories are going to be modeled by structs that contains its name and the index of its parent directory in the directory array. 
+    We chose this implementation so we can link directories to one another easily.
+    The root is going to have index zero by convention in its parent id. 
+    When we need to remove a particular directory we will just put -1 in its parent id instead of removing it from the directory array(this will mess up the parent child relationship because it relies on the index of each directory in the array and thus changing it will cause problems). 
+    In all other implementations, this will taken into account, so by convention parent id = -1 means this directory doesn't exist and we overwrite it with brand new directory.\\
+
+    \begin{table}[hbt!]
+        \centering
+        \begin{tabular}{|c|}
+            \hline
+            \textbf{DIRECTORY} \\
+            \hline
+            \textit{char} name\textit{[WORD\_SIZE]} \\
+            \textit{long int} parent\_id \\
+            \hline
+        \end{tabular}
+        \caption{Directory structure}
+        \label{tab:my_label}
+    \end{table}
+
+    \newpage
+    \item \textbf{File array}: which is an array of structs as well, these structs are going to be of type File which is in itself a struct that contains the contents of the file \textit{char* bytes} and another struct named \textit{Inode} which provides some information about the file such as its name, size and its parent directory index.\\
+
+    \begin{table}[hbt!]
+        \centering
+        \begin{tabular}{|c|}
+            \hline
+            \textbf{FILE} \\
+            \hline
+            \textit{Inode} inode \\
+            \textit{char *} bytes \\
+            \hline
+        \end{tabular}
+        \caption{File structure}
+        \label{tab:my_label}
+    \end{table}
+
+    \begin{table}[hbt!]
+        \centering
+        \begin{tabular}{|c|}
+            \hline
+            \textbf{INODE} \\
+            \hline
+            \textit{long int} size\\
+            \textit{char} name\textit{[WORD\_SIZE]} \\
+            \textit{long int} parent\_id \\
+            \hline
+        \end{tabular}
+        \caption{File structure}
+        \label{tab:my_label}
+    \end{table}
+ 
+\end{itemize}
+
+
+
+
+
+
+
+
+
+\newpage

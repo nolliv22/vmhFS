@@ -1,39 +1,42 @@
-// Custom libraries
-#include "filesystem.c"     // Custom structures for Filesystem
-#include "main.h"           // Standard libraries and global variable PATH
+int myFS_create(int size){       
+    // Create a file system of size MB at the specified path
+    // INPUT:
+    //      int size: size of the file system in MB
+    // OUTPUT:
+    //      int r: 0 
 
-int create(int size){       // size in megabytes
-    filesystem fs;
-    superblock sb;
+    // Initialize file system
+    FileSystem fs;
+    fs.directory_array = malloc(sizeof(Directory)*1);
+    fs.file_array = malloc(sizeof(File)*1);
+    
+    // Initialize superblock
+    fs.sb.max_size = size*1000*1000;
+    fs.sb.directory_number = 0;
+    fs.sb.directory_array_size = 0;
+    fs.sb.file_number =  0;
+    fs.sb.current_size = sizeof(SuperBlock);
 
-    sb.max_size = size*1024*1024;
-    sb.inode_number =  0;
-    sb.current_size = sizeof(fs);
+    // Initialize file_array and directory_array
+    fs.directory_array = malloc(sizeof(Directory)*1);
+    fs.file_array = malloc(sizeof(File)*1);
 
-    fs.sb = sb;
+    // Add root directory
+    fs = add_directory(fs, "/", -2);
+    
+    // Store the file system to the disk
+    if (put_FS(PATH, fs) != 0){
+        printf("Store file system failed\n");
+        printf("Exiting...\n");
+        exit(-1);}
 
-    int output_fd;
+    printf("FileSystem created\n");
+    printf("Size: %ld B\n", fs.sb.current_size);
+    printf("Max size: %ld B\n", fs.sb.max_size);
+    printf("Files: %ld\n", fs.sb.file_number);
+    printf("Directories: %ld\n", fs.sb.directory_number);
 
-    if ((output_fd = open(PATH, O_WRONLY | O_SYNC | O_CREAT, 00644)) < 0){
-        printf("Could not open the output file: %s\n", PATH);
-        
-        if (errno == EACCES){
-            printf("Permission denied\n");
-            exit(0);
-        } else {
-            printf("Error when opening the output file, error code: %d\n", errno);
-        }
-        // TODO: More error handling 
-
-    }
-
-    int written_bytes = write(output_fd, &fs, sizeof(fs));
-
-    if (written_bytes != sizeof(fs)){
-        printf("Write error: the number of written bytes don't match the size of the buffer\n");
-        // TODO: Error handling 
-    }
-
-    printf("Successfully created a vhm file system to %s with a maximum size of %d MB\n", PATH, size);
-    exit(0);
+    // Free memory
+    free_FS(fs);
+    return 0;
 }

@@ -1,0 +1,42 @@
+% !TEX program = pdflatex
+% !BIB program = biber
+\input{setup}
+
+\title{VMH FILESYSTEM}
+\author{Villon Chen\\
+        Moaad Maaroufi\\
+        Hamza Jad Al Aoun}
+\date{\today}
+
+\doublespacing
+\begin{document}
+  
+  \counterwithout{lstlisting}{chapter}
+  \pagenumbering{roman}
+  \include{frontmatter/titlepage}
+  \afterpage{\null\addtocounter{page}{-1}}
+  
+  %\include{frontmatter/abstract}
+  {\hypersetup{linkcolor=black}
+    % This allows the paragraphs to be numbered (e.g. 1.2.3.4)
+    \setcounter{secnumdepth}{4}
+    
+    % This allows the TOC to go down to subsection level, but not further
+    \setcounter{tocdepth}{3}
+    
+    \tableofcontents
+  }
+
+  \setlength{\parindent}{1em}
+  \setlength{\parskip}{0em}
+
+  \pagenumbering{arabic}
+  
+  % You should always divide your documents into small parts and use \include to merge them together.
+  \include{chapters/intro}
+  \include{chapters/filesystem}
+  \include{chapters/commands}
+  \include{chapters/conclusion}
+
+\end{document}
+

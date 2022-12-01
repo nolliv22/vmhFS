@@ -1,0 +1,41 @@
+\section{The create command}
+
+\subsection{How it works}
+\textbf{\textcolor{blue}{create}}: takes as an input the size of the file system we want to create.\\
+
+When calling the create command, memory will be allocated on the heap for both the directory and the file array since they are dynamic, and then a file system structure is filled with the initial data. Eventually the new file system will have: 
+\begin{itemize}
+\item max\_size will be size*1000*1000 (size is passed to create in MB and its multiplied by ${10}^{6}$ in order to convert it into bytes).
+\item the directory and file's number is initialized to 0.
+\item the current size of the file system will updated to the size of the Superblock plus the size of the directory and file arrays.
+\item using add\_directory function, root directory "/" with index -2 is added to the file system after allocating memory for 1 Directory struct in the directory array.
+\end{itemize}
+
+At the end the FileSystem struct will be stored on the disk using put\_FS function and all the allocated memory will be freed up.
+
+\newpage
+\subsection{Testing}
+\lstset{language=bash,caption={create command},label=code:create-command}
+\begin{lstlisting}
+$ vmhFS /tmp/tmpFS create 10
+FileSystem created
+Size: 80 B
+Max size: 10000000 B
+Files: 0
+Directories: 1
+\end{lstlisting}
+
+\lstset{language=bash,caption={File system on the disk},label=code:file-system-on-the-disk}
+\begin{lstlisting}
+$ stat /tmp/tmpFS 
+  File: /tmp/tmpFS
+  Size: 10000000        Blocks: 8          IO Block: 4096   regular file
+Device: 10302h/66306d   Inode: 5898250     Links: 1
+Access: (0664/-rw-rw-r--)  Uid: ( 1000/  michel)   Gid: ( 1000/  michel)
+Access: 2022-12-01 14:31:22.790783924 +0100
+Modify: 2022-12-01 15:13:15.805815135 +0100
+Change: 2022-12-01 15:13:15.805815135 +0100
+ Birth: 2022-12-01 13:17:22.874251973 +0100
+\end{lstlisting}
+
+\newpage

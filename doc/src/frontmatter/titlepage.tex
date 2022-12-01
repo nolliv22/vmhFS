@@ -1,0 +1,49 @@
+\thispagestyle{empty}
+\newgeometry{left=4cm,right=3cm,top=3cm,bottom=2cm}
+
+\begin{titlepage}
+  \singlespacing
+  \begin{center}
+  
+    \tikzexternaldisable
+    \tikzsetnextfilename{figures/frame}
+    \begin{tikzpicture}[overlay, remember picture]
+    \draw[-,black,ultra thick]
+    ($(current page.north west) + (3cm,-2cm)$) rectangle ($(current page.south east) + (-2cm,2cm)$);
+    \draw[-,black,thin]
+    ($(current page.north west) + (2.8cm,-2.2cm)$) rectangle ($(current page.south east) + (-1.8cm,2.2cm)$);
+    \draw[-,black,thin]
+    ($(current page.north west) + (3.2cm,-1.8cm)$) rectangle ($(current page.south east) + (-2.2cm,1.8cm)$);
+    \end{tikzpicture}
+    \tikzexternalenable
+  
+    \includegraphics[height=3cm]{figures/eurecom_logo.jpeg}\\[0.5cm]
+  
+    % Main title
+    \par\vspace{1cm}
+    \makeatletter
+    \begin{minipage}{\textwidth}
+      \centering
+      \fontsize{24pt}{24pt}\selectfont\scshape\@title \\[1cm]
+      \large Basic OS project\\Fall 2022\\First year engineering program
+    \end{minipage}
+    \makeatother
+    \par\vspace{1.5cm}
+    
+    \large
+    \textbf{BY}\\[0.25cm]
+    \makeatletter\@author\makeatother
+    \par\vspace{2cm}
+    
+    {\bfseries{SUPERVISORS}}\\[0.25cm]
+    Ludovic Apvrille\\
+    Sophie Coudert\\[2cm]
+    
+    EURECOM Engineering School\\
+    Sophia Antipolis, France\\[1cm]
+    
+    \today
+  
+  \end{center}
+\end{titlepage}
+\restoregeometry

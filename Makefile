@@ -12,9 +12,9 @@ dir:
 	@mkdir -p $(BUILDDIR)
 
 main: $(SRCDIR)/main.c
-	$(CC) $(FLAGS) -o $(BUILDDIR)/vhmFS $^ -lrt
+	$(CC) $(FLAGS) -o $(BUILDDIR)/vmhFS $^
 	@echo "Build successfully"
 
-clean:
+clear:
 	rm -rf $(BUILDDIR)
 	@echo "$(BUILDDIR) has been deleted"
