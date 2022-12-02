@@ -1,19 +1,19 @@
 \section{The write command}
 
 \subsection{How it works}
-\textit{\textcolor{blue}{\textbf{write}}}: takes as argument a string input file stored in the computer to write at a specified \textit{destination\_path}.\\
+\textit{\textcolor{blue}{\textbf{write}}}: takes as an argument an input file stored in the computer and writes at a specified \textit{destination\_path}.\\
 
-We start with some error handling: we check if the given file exists already or not  by using the function \textit{find\_file\_from\_path}. This function returns -1 if the file doesn't exist otherwise it returns the index of the file in the file array.\\
+We start with some error handling: we check if the given file exists already in the file system by using the function \textit{find\_file\_from\_path}. This function returns -1 if the file doesn't exist otherwise it returns the index of the file in the file array.\\
 
 After this step we use the function \textit{create\_dir\_from\_path} to check whether the path exists or not, if it does the function proceeds without changing anything. If it doesn't exist or its missing some directories it creates them. \\
 
-Next, we create a struct of type File where we put the content of the input file and the information related to it thanks to the function \textit{get\_file}. Before proceeding we check if the size of the file doesn't surpass 5MB.\\
+Next, we create a struct of type File where we put the content of the input file and the information related to it thanks to the function \textit{get\_file}. Before proceeding we check if the size of the file doesn't exceed 5MB.\\
 
-Now, to add the File struct that we just created to the file system we need to check first if the number of bytes of the file plus the size of one inode can fit in the current file system. If it is the case we add it directly using the function \textit{add\_file}. This function first checks if the file array is empty,if it is we use the the LibC function \textit{malloc} to allocate space for the new file. If there are already some files in the file system, we use \textit{realloc} to allocate more space for the new file. We treated the first case separately to avoid using \textit{realloc} on empty array as it can result in some memory problems. \\
+Now, to add the File struct that we just created to the file system we need to check first if the number of bytes of the file plus the size of one inode can fit in the current file system. If it is the case we add it directly using the function \textit{add\_file}. This function first checks if the file array is empty,if it is we use the the LibC function \textit{malloc} to allocate space for the new file. If there are already some files in the file system, we use \textit{realloc} to allocate more space for the new file. We treated the first case separately to avoid using \textit{realloc} on an empty array as it can result in some memory problems. \\
 \newpage
 
 Moving on to the second case now where there isn't enough space to store the new file. Here we should proceed using the FIFO principle.
-The first case is where the file array contains only one file, we shall remove it using the function \textit{remove\_file} that we discussed earlier in the remove command. Next, we add it to the file system using  the function \textit{add\_file}. We treat this case separately to avoid using the \textit{realloc} on on empty array. In the second case the file system contains at least two files, we go into a while loop that counts the number of files to be removed from the file system starting starting from the oldest , in order for our new file to fit.\\
+The first case is where the file array contains only one file, we shall remove it using the function \textit{remove\_file} that we discussed earlier in the remove command. Next, we add it to the file system using  the function \textit{add\_file}. We treat this case separately to avoid using the \textit{realloc} on on empty array. In the second case the file system contains at least two files, we go into a while loop that counts the number of files to be removed from the file system starting from the oldest , in order for our new file to fit.\\
 
 Now we should shift the files to the left in the file array by the number of files that should be removed (that we counted earlier with the while loop). Afterwards we reallocate the file array to fit the current number of files. Eventually we add the new file at end of the file array.
 

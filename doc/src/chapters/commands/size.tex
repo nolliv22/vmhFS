@@ -1,13 +1,13 @@
 \section{The size command}
 
 \subsection{How it works}
-\textcolor{blue}{\textbf{size}}: computes the size of files inside a given directory. If the -r flag is indicated, size should recursively calculate the size of files inside that directory. \\
+\textcolor{blue}{\textbf{size}}: computes the size of files inside a given directory. It takes as arguments  the directory path , a flag to indicate the desired size unit, an optional  -r flag to recursively calculate the size of files inside that directory and a -stat flag that gives some statistics about the file system.  \\
 
-This function takes as an argument the directory path. We use the function \textit{find\_dir\_from\_path} to check if the path is correct, if not it returns -1. If the path exists indeed, it returns the directory index in the directory file.\\
+We first start by calling the function \textit{find\_dir\_from\_path} to check if the path is correct, if not it returns -1. If the path exists indeed, it returns the directory index in the directory file.\\
 
-We also use the function \textit{size\_dir\_files} that calculates the size of files inside a single directory with a simple for loop over the file array.\\
+Next we use the function \textit{size\_dir\_files} that calculates the size of files inside a single directory with a simple for loop over the file array.\\
 
-For the recursive part, we use the function \textit{size\_accumulator} that takes in argument an index of a given directory. The base condition of this recursive function is to stop at a directory that doesn't have any children directories. We compute the indices of a given directory by using the function \textit{get\_dir\_children} that uses another simple for loop over the directory array. Its algorithm is very similar to the one used in the recursive ls.\\
+For the recursive part, we use the function \textit{size\_accumulator} that takes as an argument the index of a given directory and computes recursively the size of files inside of it. The base condition of this recursive function is to stop at a directory that doesn't have any children directories. We find the indices of the children directories of a given directory by calling the function \textit{get\_dir\_children} that uses another simple for loop over the directory array.\\
 
 \newpage
 \subsection{Testing}
