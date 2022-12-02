@@ -2,4 +2,4 @@
 \label{cp:conclusion}
 
 All the VMH File system commands work as expected and fulfill the initial requirements. The queue structure of the file system simplified the implementation of the other functions. Furthermore, the advantage of working on the RAM is that we make one load and one save instead of repeating this process multiple times for each micro-modification if we were to have a static structure on the disk.
-But this approach will only work for very small file systems as mentioned before. To counter this problem, a possible solution is to segment the file system and load to the RAM segment by segment.
+But this approach will only work for very small file systems as mentioned before. To counter this problem, a possible solution is to segment the file system and load it into the RAM segment by segment to make the necessary modifications.We could also add a recursive flag to the remove command, the implementation is going to be similar to the ls and size commands.

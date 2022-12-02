@@ -1,18 +1,18 @@
 \section{The ls command}
 
 \subsection{How it works}
-\textbf{\textcolor{blue}{ls}}: takes as an input the directory path and two flags: -r for the recursive version and -d to sort the files by date. (By construction of the file system, they're always sorted.)\\
+\textbf{\textcolor{blue}{ls}}: takes as an input the directory path and two flags: -r for the recursive version and -d to sort the files by date. (By construction of the file system, they're always sorted.)To do its job it uses the following subfunctions:\\
 
 \begin{itemize}
 \item \textit {ls\_accumulator(FileSystem fs, long int dir\_id, int level, int max\_level)}: this function is recursive, it takes the directory id as an input, it uses the \textit{get\_dir\_children(fs,id)} function to get all the children directories of the given directory and stores them in a \textit{dir\_children} structure, if the children number of this directory is greater than zero this means that its not empty and has children directories, in this case we will print the name of the directory children and recursively print all the files found in these directories. 
-The base condition for this recursive function is \textit{dir\_children.number}==0 i.e to stop when a given directory doesn't n’t have any children directories.\\
+The base condition for this recursive function is \textit{dir\_children.number}==0 i.e to stop when a given directory doesn't have any children directories.\\
 
 \item \textit{Dir\_files get\_dir\_files(FileSystem fs, long int dir\_id)}: this function takes as an input the directory id and find all the files found in this directory.
-
-The ls function always checks whether the path provided is correct or not. If the recursive flag hasn’t been indicated, it will print the all files inside the desired directory. \\
+\end{itemize}
+The \textbf{\textcolor{blue}{ls}} function always checks whether the path provided is correct or not. If the recursive flag hasn’t been indicated, it will print the all files inside the desired directory. \\
 
 On the other hand if the recursive flag is present, the ls function prints the files inside the given directory and recursively prints all files  contained in its children directories schemed in a tree representation. \\
-\end{itemize}
+
 
 \newpage
 \subsection{Testing}

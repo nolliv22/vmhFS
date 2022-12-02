@@ -1,10 +1,10 @@
 \section{The read command}
 
 \subsection{How it works}
-\textcolor{blue}{\textbf{read}}: return the bytes of the file. It takes in argument the path to the file.
+\textcolor{blue}{\textbf{read}}: returns the bytes of the file. It takes in argument the path to the file.
 First it checks if the path refers to a file and not a directory.\\
 
-Then, we call the function \textit{file\_from\_path}. If the return value equals -1, that means the file doesn't exist. Else, we'll use the function \textit{file\_id} to get the index of the file in the \textit{file\_array}.\\
+Then, we call the function \textit{file\_from\_path}. If it returns a value  equal to -1, that means the file doesn't exist. Else, we'll use the function \textit{file\_id} to get the index of the file in the \textit{file\_array}.\\
 
 Thanks to the File struct, we can access easily to the content of the file with the member \textit{File.bytes}. Finally we print it in the standard output.\\
 \begin{center}

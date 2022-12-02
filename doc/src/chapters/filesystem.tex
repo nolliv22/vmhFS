@@ -47,11 +47,11 @@ In order to facilitate the manipulation of the objects that we are going to use 
     \end{table}
     
     \item \textbf{The directory array}: which is an array of structs.
-    The directories are going to be modeled by structs that contains its name and the index of its parent directory in the directory array. 
+    Each directories is modeled by a struct that contains its name and the index of its parent directory in the directory array. 
     We chose this implementation so we can link directories to one another easily.
-    The root is going to have index zero by convention in its parent id. 
-    When we need to remove a particular directory we will just put -1 in its parent id instead of removing it from the directory array(this will mess up the parent child relationship because it relies on the index of each directory in the array and thus changing it will cause problems). 
-    In all other implementations, this will taken into account, so by convention parent id = -1 means this directory doesn't exist and we overwrite it with brand new directory.\\
+    The root is going to have index -2 by convention in its parent id. 
+    When we need to remove a particular directory we will just put -1 in its parent id instead of removing it from the directory array(because if we remove it by reallocating the array and overwriting it, we would have messed up the parent child relationship because it relies on the index of each directory in the array and thus changing it will cause problems). 
+    In all other implementations, this will be taken into account, and by convention parent id = -1 means this directory doesn't exist and we can overwrite it with brand new directory.\\
 
     \begin{table}[hbt!]
         \centering

@@ -7,10 +7,10 @@ As we did in the read function we should also check here whether the path is cor
 
 If the path is valid (i.e. there is something at this path in the file system), then we must get a non -1 value (-1 means the file/dir doesn't exist at this path). Else, if we get return value -1 for both of these functions, the path is not valid.\\
 
-Now that we know whether the path refers to a file or a directory, we just need to call the adapted function to remove it (either \textit{rm\_directory or rm\_file)}. Those functions are file system functions, because they are used in many commands.\\
+Now that we know whether the path refers to a file or a directory, we just need to call the adapted function to remove it (either \textit{rm\_directory or rm\_file)}. Those functions are file system functions, because they are used in other commands as well.\\
 
-Remove a file is different from removing a directory.
-On one hand, remove a file consists of removing the file from the \textit{file\_array} and then shift every other file to fill the gap.
+Removing a file is different from removing a directory.
+On one hand, removing a file consists of removing the file from the \textit{file\_array} and then shift every other file to fill the gap.
 On the other hand, removing a directory consists only of setting up the directory's \textit{parent\_id} to -1 (convention) and name to \textit{TRASHED}.\\
 
 Directories should not be shifted like files, because we need to preserve the parent-child relationship between directories and this information is stored inside in \textit{parent\_id} member and their indices in the \textit{directory\_array}.\\
